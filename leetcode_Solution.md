@@ -1450,6 +1450,24 @@ If we look for `1`, `3`, `2` from left to right, the logic gets extremely messy.
    * **Crucial Twist**: The elements being kicked out are smaller than the new `3`, but they came from the right side of `3`! This makes them perfect candidates for position `2`! We update `ak_2` with the largest popped value.
 4. **The Victory `1`**: After updating `ak_2`, if we ever find a current number `nums[i]` that is **strictly smaller** than `ak_2`, we instantly win! Because `nums[i]` (which is `1`) $< ak_2$ (which is `2`) $< \text{stack top}$ (which is `3`). A perfect 132 pattern is found!
 
+💡 核心通关秘籍（倒序单调栈 - 极限寻找卧底 “2”）
+
+如果顺着从左往右找，你会陷入“既要盯着小的，又要找大的，还要防着后面不高不矮的”死胡同，脑浆子都会看出来。
+
+这道题的黄金解法是：**从右往左（倒着）遍历数组**，并维护一个**单调递增栈**。
+
+### 🎬 极其生动的“抓内鬼”大白话情景剧：
+1. **中介 `2` 号位（用变量 `ak_2` 表示）**：我们初始化它为 `-无限大`。它代表我们从右边一路走过来，能抓到的**最大的“中介/二号位”**。
+2. **老大 `3` 号位（栈顶元素）**：单调栈里从栈顶到栈底，死死存着从大到小的“老大候选人”。
+3. **疯狂踢人与抬高门槛**：我们倒着往左走，每遇到一个新数字：
+   * 如果这个新数字比栈顶元素还要**大**，说明这家伙有实力当“老大 `3` 号位”！
+   * 他会一脚把栈里比他小的元素全轰出去（`stack.pop()`）。
+   * **灵魂魔改点**：被他轰出去的这些小弟，因为本来就待在右边，现在又比新老大矮，这不就是天然的**“中介 `2` 号位”**吗？！
+   * 我们让 `ak_2` 继承这些被轰走的人里最大的那个。`ak_2` 被抬得越高，后面的数字想要小于它，就越容易！
+4. **一枪秒杀**：在我们更新完 `ak_2` 之后，只要发现当前左边的数字 `nums[i]` **严格小于 `ak_2`**，直接宣告通关！因为这一瞬间：
+   $$\text{当前数字 (1号位)} < ak\_2 \text{ (2号位)} < \text{栈顶元素 (3号位)}$$
+   连坐关系完美成立！
+
 ---
 
 ## 💻 Python3 Solution
