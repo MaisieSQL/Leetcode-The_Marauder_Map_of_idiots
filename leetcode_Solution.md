@@ -1486,4 +1486,10 @@ class Solution:
         return False
 ```
 
+📊 Complexity Analysis
+
+* Time Complexity: $O(n)$ — We traverse the array of length $n$ exactly once from right to left. Each element is pushed onto the stack once and popped at most once, which bounds the inner while loop to a cumulative amortized cost of $O(n)$.
+
+* Space Complexity: $O(n)$ — In the worst-case scenario (e.g., a strictly decreasing array), no elements will be popped, and the stack will grow to store all $n$ elements.
+
 ---
