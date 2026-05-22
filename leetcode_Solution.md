@@ -1243,3 +1243,75 @@ class Solution:
 
 ---
 
+# 567. Permutation in String
+
+`Medium` `Topics` `Companies`
+
+## 📝 Description
+
+Given two strings `s1` and `s2`, return `true` *if* `s2` *contains a permutation of* `s1`*, or* `false` *otherwise*.
+
+In other words, return `true` if one of `s1`'s permutations is the substring of `s2`.
+
+### Example 1:
+> **Input:** s1 = "ab", s2 = "eidbaooo"
+> **Output:** true
+> **Explanation:** s2 contains one permutation of s1 ("ba").
+
+### Example 2:
+> **Input:** s1 = "ab", s2 = "eidboaoo"
+> **Output:** false
+
+### Constraints:
+* $1 \le \text{s1.length, s2.length} \le 10^4$
+* `s1` and `s2` consist of lowercase English letters.
+
+---
+
+## 💡 Core Strategy (Fixed-Size Sliding Window)
+
+This problem is the exact structural twin of **LeetCode 438 (Find All Anagrams)**. A permutation of `s1` means a contiguous substring in `s2` that contains the exact same characters with the exact same frequencies as `s1`.
+
+### Key Mechanics:
+1. **Fixed Window**: The size of our active search window in `s2` must always be equal to `len(s1)`.
+2. **Frequency Ledger**: We use `collections.Counter` to maintain character counts.
+3. **Eviction Rule (Crucial)**: As the window moves right, we increment the count of the incoming character. When the loop index `i >= len(s1)`, it means the window is overflowing, and the character at `s2[i - len(s1)]` must be evicted. **If its count drops to 0, it must be completely deleted (`del`) from the map**, otherwise dictionary comparison (`count_s2 == count_s1`) will fail due to leftover dummy keys with 0 values.
+4. **Early Exit**: The moment `count_s2 == count_s1`, we return `True` immediately without wasting time scanning the rest of the string.
+
+---
+
+## 💻 Python3 Solution
+
+```python
+from collections import Counter
+
+class Solution:
+    def checkInclusion(self, s1: str, s2: str) -> bool:
+        len_1, len_2 = len(s1), len(s2)
+        
+        if len_1 > len_2:
+            return False
+            
+        count_s1 = Counter(s1)
+        count_s2 = Counter()
+        
+        for i in range(len_2):
+            # 1. Slide right: absorb new character
+            count_s2[s2[i]] += 1
+            
+            # 2. Slide left: evict old character when window exceeds fixed bounds
+            if i >= len_1:
+                left_char = s2[i - len_1]
+                if count_s2[left_char] == 1:
+                    del count_s2[left_char]  # Clean eviction to pass dictionary equality
+                else:
+                    count_s2[left_char] -= 1
+                    
+            # 3. Match Check
+            if count_s2 == count_s1:
+                return True
+                
+        return False
+```
+
+🎨 核心心法：固定长度滑动窗口（进场与开除）为了不重复计算，我们用一个动态账本（哈希表）来记录窗口里现在都有哪些字母。整个过程就像一个“严格限员的公司”：标准清单（count_p）：老板给的招聘标准（比如 p="abc"，标准就是 $a:1, b:1, c:1$）。新员工进场：右指针 i 每往右走一步，新字母进场，我们在动态账本里给它的数量 +1。老员工被开除（关键点！）：因为窗口长度是固定的。当 i >= len(p) 时，说明公司满员了！每进来一个新员工，最左边那个最早进来的老员工（下标是 i - len(p)）就必须被无情开除，数量 -1。彻底抹除（你的独门细节）：如果被开除的老员工数量减到 0 了，必须用 del 键把它的名字从账本里彻底擦掉！否则字典对比（count_s == count_p）会因为带着一堆 0 从而宣告失败。
