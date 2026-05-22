@@ -1169,3 +1169,77 @@ class Solution:
 ```
 ---
 
+#### 209. Minimum Size Subarray Sum
+
+`Medium` `Topics` `Companies`
+
+##### 📝 Description
+
+Given an array of positive integers `nums` and a positive integer `target`, return *the **minimal length** of a subarray whose sum is greater than or equal to* `target`. If there is no such subarray, return `0` instead.
+
+##### Example 1:
+> **Input:** target = 7, nums = [2,3,1,2,4,3]
+> **Output:** 2
+> **Explanation:** The subarray `[4,3]` has the minimal length under the problem constraint.
+
+##### Example 2:
+> **Input:** target = 4, nums = [1,4,4]
+> **Output:** 1
+
+##### Example 3:
+> **Input:** target = 11, nums = [1,1,1,1,1,1,1,1]
+> **Output:** 0
+
+##### Constraints:
+* $1 \le \text{target} \le 10^9$
+* $1 \le \text{nums.length} \le 10^5$
+* $1 \le \text{nums}[i] \le 10^4$
+
+##### 💡 Core Strategy (Adaptive Shrinking Sliding Window)
+
+This problem is the exact inverse of LeetCode 3. Instead of searching for the *maximum* window length under constraint, we are hunting for the **minimum valid window length** where the sum of elements is greater than or equal to `target`.
+
+##### The Greedy "Bulk & Cut" Strategy:
+1. **Right Pointer (`right`) Explores (Bulk Up)**: The out loop uses a standard `for` loop to advance the right pointer index. It blindly absorbs new numbers into the window (`currentsum += nums[right]`) until the sum hits or exceeds the target.
+2. **Left Pointer (`left`) Shrinks (Weight Loss)**: The moment `currentsum >= target` is satisfied, we officially have a valid window! Since we want the *smallest* length, we immediately trigger a `while` loop to try and shrink the window from the left (`left += 1`).
+3. **Record Global Limits**: During the shrinking phase, we continuously record the minimum window size found using `min(min_len, right - left + 1)`. We stop shrinking only when the window sum drops below the `target`.
+
+##### 🚨 Common Pitfalls & Code Mechanics:
+* **Loop Control**: Do not use `while right in range(...)` because `while` does not auto-increment indices and will lead to `NameError` or infinite loops. Always stick to `for right in range(len(nums))`.
+* **Value vs. Index**: When throwing elements out of the window, ensure you deduct the **actual numerical value** `nums[left]` from `currentsum`, not the index value `left`.
+
+##### 💻 Python3 Solution
+
+```python
+class Solution:
+    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
+        left = 0
+        currentsum = 0
+        # Initialize with infinity so any valid window size can easily override it
+        min_len = float('inf')
+        
+        # 1. Right pointer expands the window from the right bound
+        for right in range(len(nums)):
+            currentsum += nums[right]
+            
+            # 2. As long as the current window satisfies the condition, try to shrink it
+            while currentsum >= target:
+                # Refresh the record with the smaller length
+                min_len = min(min_len, right - left + 1)
+
+                # Evict the leftmost element by value, then advance the left boundary
+                currentsum -= nums[left]
+                left += 1
+        
+        # If min_len remains infinity, no valid subarray was found -> return 0
+        return min_len if min_len != float('inf') else 0
+```
+
+📊 Complexity Analysis
+
+* Time Complexity: $O(n)$Even though there is a while loop nested inside a for loop, look closely at the behavior of the pointers. The right pointer right visits each index exactly once. The left pointer left only moves forward and never backtracks, meaning it also visits each index at most once. The elements are added to the window once and removed at most once, bounding the total operations perfectly to $2n$, which simplifies to linear time $O(n)$.
+
+* Space Complexity: $O(1)$The window states are tracked purely using sliding dynamic pointer indices and a couple of numerical scalar variables (currentsum, min_len). No extra hash arrays or data stores are allocated.
+
+---
+
