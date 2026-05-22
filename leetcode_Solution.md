@@ -1315,3 +1315,86 @@ class Solution:
 ```
 
 🎨 核心心法：固定长度滑动窗口（进场与开除）为了不重复计算，我们用一个动态账本（哈希表）来记录窗口里现在都有哪些字母。整个过程就像一个“严格限员的公司”：标准清单（count_p）：老板给的招聘标准（比如 p="abc"，标准就是 $a:1, b:1, c:1$）。新员工进场：右指针 i 每往右走一步，新字母进场，我们在动态账本里给它的数量 +1。老员工被开除（关键点！）：因为窗口长度是固定的。当 i >= len(p) 时，说明公司满员了！每进来一个新员工，最左边那个最早进来的老员工（下标是 i - len(p)）就必须被无情开除，数量 -1。彻底抹除（你的独门细节）：如果被开除的老员工数量减到 0 了，必须用 del 键把它的名字从账本里彻底擦掉！否则字典对比（count_s == count_p）会因为带着一堆 0 从而宣告失败。
+
+---
+
+# 735. Asteroid Collision
+
+`Medium` `Topics` `Companies`
+
+## 📝 Description
+
+We are given an array `asteroids` of integers representing asteroids in a row.
+
+For each asteroid, the absolute value represents its size, and the sign represents its direction (positive meaning right, negative meaning left). Each asteroid moves at the same speed.
+
+Find out the state of the asteroids after all collisions. If two asteroids meet, the smaller one will explode. If both are the same size, both will explode. Two asteroids moving in the same direction will never meet.
+
+### Example 1:
+> **Input:** asteroids = [5,10,-5]
+> **Output:** [5,10]
+> **Explanation:** The 10 and -5 collide resulting in 10. The 5 and 10 never collide.
+
+### Example 2:
+> **Input:** asteroids = [5,2,-5]
+> **Output:** []
+> **Explanation:** The 2 and -5 collide resulting in -5. The 5 and -5 collide resulting in [].
+
+### Example 3:
+> **Input:** asteroids = [10,-5]
+> **Output:** [10]
+> **Explanation:** The 10 and -5 collide resulting in 10.
+
+### Constraints:
+* $2 \le \text{asteroids.length} \le 10^4$
+* $-1000 \le \text{asteroids}[i] \le 1000$
+* $\text{asteroids}[i] \ne 0$
+
+---
+
+## 💡 Core Strategy (The "Pop-Candy" Stack / 消消乐栈)
+
+This problem doesn't require maintaining a sorted monotonic sequence. Instead, it perfectly extends the **"Pop-Candy/Matching" engine** used in standard parenthesis matching (like LeetCode 20).
+
+### The 3 Law of Cosmic Collisions:
+1. **Peaceful Cruising**: If asteroids move in the same direction (`+` and `+`, or `-` and `-`), or move away from each other (`-` on left, `+` on right), they will **never** collide.
+2. **The Danger Zone**: A collision **only** occurs when a right-moving asteroid (`+`) is inside the stack, and a newly arriving asteroid is moving left (`-`).
+3. **Survival of the Fittest**:
+   * If the incoming `|left| > |right|`, the stack top explodes (`stack.pop()`). The incoming asteroid keeps crushing previous ones until it meets a larger one, a same-sized one, or the stack empties.
+   * If `|left| == |right|`, both annihilate each other.
+   * If `|left| < |right|`, the incoming asteroid explodes instantly.
+
+---
+
+## 💻 Python3 Solution
+
+```python
+class Solution:
+    def asteroidCollision(self, asteroids: List[int]) -> List[int]:
+        stack = []
+        
+        for ast in asteroids:
+            # We only trigger a collision loop if the incoming asteroid goes LEFT (-)
+            # and the current survivor at the stack top goes RIGHT (+)
+            while stack and ast < 0 < stack[-1]:
+                # Case 1: Incoming asteroid is LARGER than the stack top
+                if abs(ast) > stack[-1]:
+                    stack.pop()  # The stack top explodes, loop continues to check next item
+                    continue
+                
+                # Case 2: Both asteroids are EQUAL in size
+                elif abs(ast) == stack[-1]:
+                    stack.pop()  # Both annihilate each other
+                
+                # Case 3: Incoming asteroid is SMALLER than the stack top
+                # (In both Case 2 and Case 3, the incoming asteroid gets destroyed, stopping the loop)
+                break
+                
+            else:
+                # The 'else' block associated with a 'while' loop executes 
+                # ONLY if the while loop terminates naturally without hitting a 'break'.
+                # This means the incoming asteroid survived all clashes or faced no opposition!
+                stack.append(ast)
+                
+        return stack
+```
