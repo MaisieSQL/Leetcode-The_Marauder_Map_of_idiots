@@ -1398,3 +1398,92 @@ class Solution:
                 
         return stack
 ```
+
+---
+
+# 456. 132 Pattern
+
+`Medium` `Topics` `Companies`
+
+你这真是直接一脚踩进了单调栈的终极大 Boss 房间！LeetCode 456. 132 模式 (132 Pattern) 被公认为单调栈题型里最绕、最烧脑、也最隐蔽的一道中等题。很多大厂面试官特别喜欢拿它来当压轴题，去测验候选人的算法极限。只要你能把这道题的骨架给拆明白，你的单调栈内功就可以直接原地宣布大圆满毕业！
+
+## 📝 Description
+
+Given an array of `n` integers `nums`, return `true` *if there is a **132 pattern** in* `nums`*, otherwise, return* `false`.
+
+A **132 pattern** is a subsequence of three integers `nums[i]`, `nums[j]` and `nums[k]` such that `i < j < k` and `nums[i] < nums[k] < nums[j]`.
+
+### Example 1:
+> **Input:** nums = [1,2,3,4]
+| **Output:** false
+> **Explanation:** There is no 132 pattern in the sequence.
+
+### Example 2:
+> **Input:** nums = [3,1,4,2]
+> **Output:** true
+> **Explanation:** There is a 132 pattern in the sequence: [1, 4, 2].
+
+### Example 3:
+> **Input:** nums = [-1,3,2,0]
+> **Output:** true
+> **Explanation:** There are three 132 patterns in the sequence: [-1, 3, 2], [-1, 3, 0] and [-1, 2, 0].
+
+### Constraints:
+* $n == \text{nums.length}$
+* $1 \le n \le 2 \times 10^5$
+* $-10^9 \le \text{nums}[i] \le 10^9$
+
+---
+
+## 💡 Core Strategy (倒序单调栈 - 寻找卧底 "2")
+
+This problem asks us to find three numbers such that $i < j < k$ and $\text{nums}[i] < \text{nums}[k] < \text{nums}[j]$. 
+Let's rename them to make it simple: `1` is the smallest, `3` is the largest, and `2` is the middleman.
+
+If we look for `1`, `3`, `2` from left to right, the logic gets extremely messy. The golden trick is to **traverse from right to left** and use a **Monotonic Increasing Stack** to maintain candidate values for `3` and `2`.
+
+### The "Spy & Boss" Analogy:
+1. **The Middleman `2` (`ak_2`)**: We maintain a variable `ak_2` initialized to $-\infty$. This represents the largest possible value for the "2" position we have encountered so far from the right side.
+2. **The Big Boss `3` (Stack Top)**: The stack maintains potential candidates for the "3" position in a strictly decreasing order (from bottom to top).
+3. **The Clash**: As we scan from right to left, if the current number `nums[i]` is **larger** than the stack top, it means this new number wants to be the Big Boss `3`. 
+   * It will fiercely kick out (pop) all smaller elements from the stack.
+   * **Crucial Twist**: The elements being kicked out are smaller than the new `3`, but they came from the right side of `3`! This makes them perfect candidates for position `2`! We update `ak_2` with the largest popped value.
+4. **The Victory `1`**: After updating `ak_2`, if we ever find a current number `nums[i]` that is **strictly smaller** than `ak_2`, we instantly win! Because `nums[i]` (which is `1`) $< ak_2$ (which is `2`) $< \text{stack top}$ (which is `3`). A perfect 132 pattern is found!
+
+---
+
+## 💻 Python3 Solution
+
+```python
+class Solution:
+    def find132pattern(self, nums: List[int]) -> bool:
+        n = len(nums)
+        if n < 3:
+            return False
+            
+        stack = []         # Monotonic stack storing candidates for '3'
+        ak_2 = float('-inf')  # The value of '2', maximized from popped elements
+        
+        # Traverse the array backwards (from right to left)
+        for i in range(n - 1, -1, -1):
+            # 1. Check if we found a valid '1'
+            # If the current number is smaller than our established '2', 
+            # and since '2' only exists if it was popped by a larger '3', 
+            # we automatically satisfy 1 < 2 < 3!
+            if nums[i] < ak_2:
+                return True
+                
+            # 2. Maintain Monotonic Stack: if current number is larger than stack top,
+            # it qualifies as a better/larger '3'.
+            while stack and nums[i] > stack[-1]:
+                # The elements kicked out by '3' become candidates for '2'.
+                # We take the maximum to make it easier for future numbers to be smaller than '2'.
+                ak_2 = stack.pop()
+                
+            # 3. Push the current number as a candidate for '3'
+            stack.append(nums[i])
+            
+        return False
+```
+
+---
