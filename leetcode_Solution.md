@@ -1031,3 +1031,141 @@ class Solution:
                 
         return ans
 ```
+
+---
+
+## 05/22/2026
+
+### 复习模块：
+
+# 🏆 LeetCode 算法通关秘籍与历史战果汇总 (截至 2026-05-22)
+
+| 阶段 | 题号与名称 | 核心算法分类 | 核心通关秘籍（一句话直击灵魂） |
+| :--- | :--- | :--- | :--- |
+| **温故** | **1. Two Sum** | 哈希表 / 空间换时间 | 乱序数组的“四处打听”流，用字典充当备忘录 $O(n)$ 秒杀。 |
+| **温故** | **3. Longest Substring Without Repeating Characters** | 不定长滑动窗口 | `left` 指针绝不倒退的“拉链法则”，`>= left` 护体防止撞见已被淘汰的脏数据。 |
+| **温故** | **438. Find All Anagrams in a String** | 固定长度滑动窗口 | 恒定为 `len(p)` 的窗口，用 `Counter` 实时记账。数量归零时必须彻底 `del` 对应的键，否则字典对比会直接翻车。 |
+| **温故** | **11. Container With Most Water** | 相向双指针 / 贪心 | 木桶效应决定蓄水高度。由于向内收缩宽度注定减小，每次必须无脑移动较矮的柱子，去赌一个更高的未来。 |
+| **温故** | **15. 3Sum** | 排序 + 相向双指针 | 细节狂魔。排序是去重的灵魂，固定第一个数后用对撞指针两头包抄。固定位 `i`、左指针 `L`、右指针 `R` 三个位置全都要极限跳过重复值。 |
+| **温故** | **42. Trapping Rain Water** | 相向双指针 / 空间极限优化 | 木桶效应的二维终极魔改。不需要提前开辟 $O(n)$ 空间，利用对撞指针，哪边矮就先结算哪边，用 `left_max` 和 `right_max` 边走边算。 |
+| **温故** | **141. Linked List Cycle** | 快慢指针（同向） | 操场套圈理论。兔子（快指针步长 2）和乌龟（慢指针步长 1）同向奔跑，一旦没有环，兔子直奔终点；一旦有环，兔子必定在环内追尾并套圈乌龟。 |
+| **温故** | **283. Move Zeroes** | 快慢指针 / 原地交换 | 质检员与搬运工的完美配合。快指针（`fast`）跑前面当质检员，抓到非 0 元素就告诉慢指针（`slow`）原地控坑交换，做到完美的 $O(1)$ 空间整理。 |
+| **温故** | **167. Two Sum II - Input Array Is Sorted** | 相向双指针（对撞） | 有序数组附带黄金导航。最矮和最高对撞，矮+高太小则 `left += 1` 换大数，太大则 `right -= 1` 换小数。注意题目要求返回 1-based 下标。 |
+| **温故** | **704. Binary Search** | 二分查找 / 基础模板 | 闭区间 `[left, right]` 的死律，进入循环条件必须是 `while left <= right`。利用 `left + (right - left) // 2` 彻底封死多语言下的数值溢出毒瘤。 |
+| **温故** | **34. Find First and Last Position of Element in Sorted Array** | 二分查找 / 边界控制 | 二分功底的试金石。撞见 `target` 绝对不要收手：找左边界就让右边界左缩（`right = mid - 1`）继续向左死磕；找右边界就让左边界右缩（`left = mid + 1`）继续向右死磕。 |
+| **知新** | **739. Daily Temperatures** | 单调递减栈 / 下一个更大元素 | 单调栈教科书级母题。小黑屋里必须严格保持从大到小排队。栈里死死存**天数下标**，新来大个子弹栈的瞬间，用“今天下标 - 历史下标”顺手把天数差结算掉。 |
+| **知新** | **496. Next Greater Element I** | 单调栈 + 哈希表字典 | 经典的工程解耦破局思维。把恶心的双数组强行拆开：大数组 `nums2` 用单调栈做“批发加工”把老大关系存入字典，小数组 `nums1` 直接去字典做“零售查询” $O(1)$ 对号入座。 |
+| **知新** | **503. Next Greater Element II** | 单调栈 + 循环数组取模 | 环形数组的终极奥义。不需要真的去成倍扩容数组浪费内存，在脑脑里把数组“拉直”虚拟转两圈（`2 * n`），在访问元素时用 `i % n` 配合结果数组下标，一步到位暴力清空库存。 |
+
+今天是 2026年5月22日，咱们废话不多说，直接开始咱们的“承前启后”大练兵。按照你的要求，今天我们总共安排 10 道题：
+
+* 5 道复习巩固题：使用全新题目，来深度轰炸和检验你之前学过的双指针/滑动窗口/哈希表/单调栈。
+* 5 道全新算法题：正式吹响挺进新大陆——二叉树与递归（Binary Tree & Recursion）的冲锋号！
+
+首先，我把你之前死磕过的所有战果用一张干净利落的表格为你汇总，方便你对自己的武器库了如指掌。
+
+# 🎯 2026-05-22 “老带新” 10 道必刷题单全景规划
+
+## ⚔️ 阶段一：旧算法·新战场 (5 道全新盲测题)
+
+| 题号与名称 | 难度 | 核心算法分类 | 今日盲测突破核心（为什么 Pick 它？） |
+| :--- | :--- | :--- | :--- |
+| **202. Happy Number**<br>(快乐数) | `Easy` | 快慢指针 / 哈希集合 | 别被数学名字唬住！它表面上是纯数学计算，底层本质上是不带指针的 **LeetCode 141 快慢指针（链表环）** 的魔改变种。如果计算陷入死循环，就代表有环！用它来复习乌龟与兔子流，好玩又绝妙。 |
+| **209. Minimum Size Subarray Sum**<br>(长度最小的子数组) | `Medium` | 不定长滑动窗口 | 用来高强度检验你对 **LeetCode 3（最长子串）** 的滑动窗口掌控力。这次反过来了，目标是寻找满足条件的连续区间的**最小值**，极致考验你右指针扩张、左指针收缩的拉链节奏。 |
+| **567. Permutation in String**<br>(字符串的排列) | `Medium` | 固定长度滑动窗口 | 它是你做过的 **LeetCode 438（字母异位词）** 的孪生亲兄弟！同样是固定长度为 `len(p)` 的窗口在全场滑动，完美用来复习和巩固 `Counter` 动态更新与清理账本的细节。 |
+| **735. Asteroid Collision**<br>(小行星碰撞) | `Medium` | 普通栈 / 对称消除 | 这道题完全不考查大小单调性，纯纯高空轰炸你在笔记里总结的 **“对称消消乐栈”（括号匹配的变形）** 的工程思维。正负数相撞、大小对冲，写起来非常爽快，解耦逻辑很硬核。 |
+| **456. 132 Pattern**<br>(132 模式) | `Medium` | 单调栈终极变型 | **单调栈的终极梦魇题**。这道题极其隐蔽且烧脑，用来彻底压榨和检验你对单调栈的理解上限。只要你能独立拿下这道 Medium，你的单调栈内功直接宣布毕业！ |
+
+---
+
+## 🌿 阶段二：全新突破口——二叉树与递归 (5 道新算法题)
+
+| 题号与名称 | 难度 | 核心算法分类 | 今日新知开辟核心（为什么 Pick 它？） |
+| :--- | :--- | :--- | :--- |
+| **104. Maximum Depth of Binary Tree**<br>(二叉树的最大深度) | `Easy` | 二叉树递归 / DFS | **二叉树和递归板块的绝对母题**！这道题将带你第一次深刻体会什么是高效的“甩手掌柜递归流”——把工作无脑甩给左、右两个副经理，自己最后只加个 1 坐享其成。 |
+| **226. Invert Binary Tree**<br>(翻转二叉树) | `Easy` | 二叉树操作 / 递归 | 算法界大名鼎鼎的“面霸梗题”（当年 Homebrew 的作者就是因为白板写不出这道题被大厂挂掉的）。学完甩手掌柜流，我们用几行代码直接一枪秒了它，打破神话！ |
+| **100. Same Tree**<br>(相同的树) | `Easy` | 多路同步递归 | 从这道题开始，我们将升级递归形态，教你掌握二叉树的**多路同步递归**。看计算机怎么同时驱使两个指针在两棵不同的树上“神同步”判断它们是否完全对称。 |
+| **101. Symmetric Tree**<br>(对称二叉树) | `Easy` | 镜像递归 | **LeetCode 100 题的完美进阶版**。这道题是让一棵树自己跟自己“照镜子”，看看左子树的左边和右子树的右边能不能完美对齐，是二叉树镜像递归的必修课。 |
+| **102. Binary Tree Level Order Traversal**<br>(二叉树的层序遍历) | `Medium` | 队列 / 广度优先 (BFS) | 此时此刻，你在笔记里抄录的 **队列 (Queue) 先进先出 (FIFO)** 将迎来它的终极用武之地！带你见识横向“剥洋葱”的广度优先搜索，用双端队列层层通关。 |
+
+### 刷题模块开启
+
+#### 202. Happy Number
+
+`Easy` `Topics` `Companies`
+
+##### 📝 Description
+
+Write an algorithm to determine if a number `n` is happy.
+
+A **happy number** is a number defined by the following process:
+1. Starting with any positive integer, replace the number by the sum of the squares of its digits.
+2. Repeat the process until the number equals 1 (where it will stay), or it **loops endlessly in a cycle** which does not include 1.
+3. Those numbers for which this process **ends in 1** are happy.
+
+Return `true` *if `n` is a happy number, and `false` if not*.
+
+#####  Example 1:
+> **Input:** n = 19
+> **Output:** true
+> **Explanation:**
+> - $1^2 + 9^2 = 82$
+> - $8^2 + 2^2 = 68$
+> - $6^2 + 8^2 = 100$
+> - $1^2 + 0^2 + 0^2 = 1$ (Stays at 1, Happy Number!)
+
+#####  Example 2:
+> **Input:** n = 2
+> **Output:** false
+> **Explanation:** The process will loop endlessly into a known sequence: `2 → 4 → 16 → 37 → 58 → 89 → 145 → 42 → 20 → 4...` (Stuck in a cycle without 1)
+
+#####  Constraints:
+* $1 \le n \le 2^{31} - 1$
+
+---
+
+#####  💡 Core Strategy (Implicit Fast & Slow Pointers)
+
+Although there are no actual linked list nodes or pointers in the input, the **runtime trajectory** of this problem perfectly mirrors **LeetCode 141 (Linked List Cycle)**.
+
+### The Underlying Graph Theory:
+* **The "Next" Pointer**: We treat the process of "calculating the sum of squares of digits" as the `.next` operation.
+* **Two Outcomes**: 
+  1. **Linear Path**: Eventually hits `1` and stays there (`1 → 1 → 1`).
+  2. **Circular Path**: Falls into a dead-end cycle without ever hitting `1` (e.g., the cycle of `4`).
+
+#####  The Double-Speed Race (Floyd's Cycle Detection):
+Instead of allocating extra memory using a Hash Set to memorize visited numbers, we can deploy a **Slow Pointer (Turtle)** and a **Fast Pointer (Hare)**:
+* **Slow** runs 1 step per turn: `slow = get_next(slow)`
+* **Fast** runs 2 steps per turn: `fast = get_next(get_next(fast))`
+
+If there is no cycle, the `fast` pointer will confidently smash the finish line first and become `1`. If there is a hidden cycle, the `fast` pointer will eventually track down and crash into the `slow` pointer from behind (`slow == fast`), triggering our cycle alert.
+
+#####  💻 Python3 Solution
+
+```python
+class Solution:
+    def isHappy(self, n: int) -> bool:
+        # Helper function: acts as the '.next' transition in an implicit linked list
+        def get_next(number: int) -> int:
+            total_sum = 0
+            while number > 0:
+                # divmod(x, 10) returns (x // 10, x % 10) elegantly in one shot
+                number, digit = divmod(number, 10)
+                total_sum += digit ** 2  # ⚠️ Use ** for exponentiation (Python ^ means XOR)
+            return total_sum
+        
+        # Initialize: Slow moves 1 step, Fast moves 2 steps ahead
+        slow = n
+        fast = get_next(n)
+        
+        # Keep racing until Fast hits 1 (Happy) OR Fast catches up to Slow (Cycle detected)
+        while fast != 1 and slow != fast:
+            slow = get_next(slow)            # Turtle takes 1 step
+            fast = get_next(get_next(fast))  # Hare takes 2 steps
+            
+        # If the loop breaks because fast == 1, it's a happy number!
+        return fast == 1
+```
+---
+
