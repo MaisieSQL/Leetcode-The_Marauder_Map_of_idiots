@@ -1770,22 +1770,11 @@ class Solution:
 #         self.val = val
 #         self.left = left
 #         self.right = right
-
 class Solution:
     def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
-        # 1. 防御线：如果是空节点，根本不需要翻转，直接返回 None 告退
         if not root:
             return None
-            
-        # 2. 甩手掌柜：让左子树和右子树各自去完成它们内部的翻转
-        left_inverted = self.invertTree(root.left)
-        right_inverted = self.invertTree(root.right)
-        
-        # 3. 核心交换：两边都翻转好后，大老板亲自把左右子树对调
-        root.left = right_inverted
-        root.right = left_inverted
-        
-        # 4. 功成身退：把翻转好的整棵树的根节点返回上去
+        root.left, root.right = self.invertTree(root.right), self.invertTree(root.left)
         return root
 ```
 Question:
