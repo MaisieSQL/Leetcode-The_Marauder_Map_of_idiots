@@ -1882,3 +1882,140 @@ class Solution:
         return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)
 ```
 
+---
+
+# 101. 对称二叉树
+
+`简单` `二叉树` `递归` `行业高频必刷题`
+
+## 📝 题目描述
+
+给你一个二叉树的根节点 `root` ，检查它是否轴对称（即：**互为镜像**）。
+
+### 示例 1：
+> **输入：** root = [1, 2, 2, 3, 4, 4, 3]
+> **输出：** true
+> **解释：** 
+>        1
+>      /   \
+>     2     2
+>    / \   / \
+>   3   4 4   3
+> 从中间画一条轴，左边和右边像照镜子一样完全对称。
+
+### 示例 2：
+> **输入：** root = [1, 2, 2, null, 3, null, 3]
+> **输出：** false
+> **解释：** 结构对不上，不是完美的镜像。
+
+---
+
+## 💡 核心通关秘籍（双指针探戈递归流 - 外侧对外侧，内侧对内侧）
+
+这道题如果只给一个指针，你根本没办法同时看左边和右边。
+所以，黄金突破口是：**大老板（根节点）以自身为中心，派出两个分身（左副总 `left` 和 右副总 `right`），让他们开始同步“照镜子”比对。**
+
+既然是照镜子（镜像），那这两个分身在往下走的时候，舞步必须是**相反且对称**的，就像在跳一场严丝合缝的探戈：
+
+### 🚨 3 道严密的镜像安检防线：
+1. **两边都走到了空**（`not left and not right`）：两边都没人，完美对称，放行返回 `True`。
+2. **一边空，一边不空**（`not left or not right`）：两边结构对不上，立马逮捕返回 `False`。
+3. **两边都有人，但长相不同**（`left.val != right.val`）：数值对不上，立马逮捕返回 `False`。
+
+### 💃 镜像分发的灵魂舞步（注意看指针搭配！）：
+当前层通过安检后，大老板指挥两个分身继续往深处走。因为要互为镜像，所以：
+* **外侧比外侧：** 左分身的左手边，必须等于右分身的右手边！$\rightarrow$ `check(left.left, right.right)`
+* **内侧比内侧：** 左分身的右手边，必须等于右分身的左手边！$\rightarrow$ `check(left.right, right.left)`
+* **通关条件：** 必须外侧对称，**并且（`and`，吸取上一题的教训！）** 内侧也对称，整棵树才是对称的！
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+我们在主函数里先做个防御，然后通过一个辅助函数 `check` 展开双线比对：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+        # 如果整棵树本来就是空的，它自己对自己当然也是对称的
+        if not root:
+            return True
+            
+        # 大老板派出左、右两个分身，开始跳“镜像探戈”
+        return self.check(root.left, root.right)
+
+    def check(self, left: Optional[TreeNode], right: Optional[TreeNode]) -> bool:
+        # 🚨 防线 1：两个分身同时走到空，说明这一路比对都完美对称
+        if not left and not right:
+            return True
+            
+        # 🚨 防线 2：一个空一个不空，结构不对称，枪毙
+        if not left or not right:
+            return False
+            
+        # 🚨 防线 3：两个都有值，但值不相等，不是镜像，枪毙
+        if left.val != right.val:
+            return False
+            
+        # ⚙️ 镜像分发：外侧对外侧（left.left vs right.right） 
+        #              AND 内侧对内侧（left.right vs right.left）
+        return self.check(left.left, right.right) and self.check(left.right, right.left)
+```
+
+📊 复杂度深度分析
+
+* 时间复杂度：O(n)
+整棵树一共有 n 个节点，我们的两个分身会以同步的速度把全场每个节点刚好访问一遍，耗时和节点总数呈完美线性关系。
+
+* 空间复杂度：O(h)
+h 是树的高度。底层系统的嵌套递归调用栈占用的深度取决于树的高度。在最坏情况下（树退化成了一条长长的链表），空间复杂度为 O(n)。
+
+Question: 这里为什么还要定义一个新的function？嵌套本身不好吗
+
+Answer: 不是嵌套调用不好，而是主函数 isSymmetric(self, root) 原始带的参数太少了，它只有一个 root。单凭一个指针，在树里根本无法施展“左右分头行动”的镜像对比！
+
+我们必须定义一个新函数（比如 check(left, right)），是为了强行给它扩充参数，开辟双线作战的战场。
+
+咱们把这里面的工程细节彻底揉碎了看：
+
+🚨 1. 为什么不能直接嵌套调用主函数自己？
+我们来尝试一下，如果像前几道题一样，不定义新函数，直接强行在主函数里自己嵌套自己：
+
+Python
+class Solution:
+    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+        if not root:
+            return True
+            
+        # 🚨 灾难发生了：你想让左边和右边去比对
+        # 但是 isSymmetric 规定了只能传【一个】参数！
+        # 你没办法写成 self.isSymmetric(root.left, root.right) ❌（会爆参数个数不匹配报错）
+        
+        # 如果你写成这样：
+        left_res = self.isSymmetric(root.left)
+        right_res = self.isSymmetric(root.right)
+        # 🚨 这意味着左子树自己跟自己比，右子树自己跟自己比。
+        # 它们各自内部是对称的，不代表它们【互为镜像】啊！比如左边是[3,4]，右边也是[3,4]，各自都不对称，但整体是对称的。
+看到了吧！因为主函数的接口是 LeetCode 死死固定好的，它只接收一个 root。当你需要让左边和右边这两个不同的节点同步结对往下走的时候，一个参数的函数根本接不住这两个变量。
+
+🛠️ 2. 新定义一个函数，到底爽在哪里？
+新定义的 check(left, right) 函数，本质上是一个“参数改装器”。
+
+主函数 isSymmetric 的职责：它是个大门迎宾员。它只负责接住最初的那一个大根节点 root。如果根节点不为空，它就把 root.left 和 root.right 两个打包好，一把扔进改装后的双参数战场。
+
+新函数 check 的职责：它是真正的双线安检员。它有两只手（left 和 right），左手抓着左子树，右手抓着右子树，从而可以完美实现：
+self.check(left.left, right.right)（外侧对比）
+self.check(left.right, right.left)（内侧对比）
+
+💡 3. 江湖高级流派：如果不喜欢多写个函数，能不能玩真正的“纯嵌套”？
+老铁，既然你提到了“嵌套本身不好吗”，Python 还真有一种超级炫酷、极为闷骚的写法——“闭包（内嵌函数）”！
+
+---
+
