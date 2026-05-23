@@ -1715,3 +1715,109 @@ class Solution:
 
 ---
 
+# 226. 翻转二叉树
+
+`简单` `二叉树` `递归` `谷歌面试名梗题`
+
+## 📝 题目描述
+
+给你一棵二叉树的根节点 `root` ，翻转这棵二叉树，并返回其根节点。
+
+**大白话解释：** 所谓的翻转二叉树，其实就是给整棵树**照镜子（镜像对称）**。把所有节点的左子树和右子树全部对调。
+
+### 示例 1：
+> **输入：** root = [4, 2, 7, 1, 3, 6, 9]
+> **输出：** [4, 7, 2, 9, 6, 3, 1]
+> **解释：**
+> 原树：
+>       4
+>     /   \
+>    2     7
+>   / \   / \
+>  1   3 6   9
+>
+> 镜像翻转后：
+>       4
+>     /   \
+>    7     2
+>   / \   / \
+>  9   6 3   1
+
+---
+
+## 💡 核心通关秘籍（甩手掌柜递归流 - 自顶向下交换）
+
+有了 104 题的基础，咱们继续把**“甩手掌柜”**的格局打开！
+
+假设你是**大老板（根节点 4）**，你想把整棵大树全部镜像翻转：
+1. **向下派发任务（递归子问题）**：你把左副总（2 号节点）和右副总（7 号节点）叫到办公室，跟他们说：“你们各自去把你们管辖的那半边树，内部先全部翻转好。”
+2. **副总们执行完毕（等待递归返回）**：左副总和右副总执行力惊人，很快把它们各自手底下的人全翻转完了。
+3. **老板做决策（主逻辑交换）**：作为大老板，你看到两边内部都翻转好了，你最后只需要做一件事——**伸出双手，把左副总和右副总的职位（指针位置）互换一下！**
+4. **防御线（递归出口）**：如果你手底下根本没人（空节点 `None`），直接返回 `None` 结束。
+
+你看，每个节点做的事情一模一样：**把左边交出去翻转 $\rightarrow$ 把右边交出去翻转 $\rightarrow$ 交换左右子树 $\rightarrow$ 返回自己**。
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+在 Python 中，交换两个变量甚至不需要第三个临时变量，一句 `a, b = b, a` 优雅搞定，所以代码短得不可思议：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        # 1. 防御线：如果是空节点，根本不需要翻转，直接返回 None 告退
+        if not root:
+            return None
+            
+        # 2. 甩手掌柜：让左子树和右子树各自去完成它们内部的翻转
+        left_inverted = self.invertTree(root.left)
+        right_inverted = self.invertTree(root.right)
+        
+        # 3. 核心交换：两边都翻转好后，大老板亲自把左右子树对调
+        root.left = right_inverted
+        root.right = left_inverted
+        
+        # 4. 功成身退：把翻转好的整棵树的根节点返回上去
+        return root
+```
+Question:
+
+class Solution:
+def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+if not root:
+ return None
+root.left = self.invertTree(root.right)
+root.right = self.invertTree(root.left)
+return root
+哪错了。。。 
+
+🚨 现场还原：大老板在第 2 行“失忆”了
+我们直接锁定你引发逻辑风暴的这两行代码：
+
+```Python
+        # 🚨 第一步：把右边翻转后的结果，直接赋给了左边
+        root.left = self.invertTree(root.right)
+        
+        # 🚨 第二步：你想把左边翻转后的结果，赋给右边
+        root.right = self.invertTree(root.left) 
+```
+
+发生了什么？：
+当程序运行完第一行 root.left = self.invertTree(root.right) 时，原来的老左树（root.left）已经被你用新右树的结果给无情覆盖掉了！
+
+致命的第二步：
+紧接着，你执行第二行去算 self.invertTree(root.left)。此时，计算机去抓 root.left，抓到的其实是刚刚在第一行被你换过来的、已经翻转好的新右树！
+
+可怕的后果：
+你相当于把右树翻转了整整两次，并把它同时装在了左边和右边。而你真正的老左树，在第一步执行完的一瞬间，就彻底在内存里蒸发消失了！
+
+---
+
