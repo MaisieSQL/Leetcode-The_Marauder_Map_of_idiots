@@ -1810,3 +1810,75 @@ return root
 
 ---
 
+# 100. 相同的树
+
+`简单` `二叉树` `递归` `精选高频题`
+
+## 📝 题目描述
+
+给你两棵二叉树的根节点 `p` 和 `q` ，编写一个函数来检验这两棵树是否相同。
+
+如果两个二叉树在结构上相同，并且节点具有相同的值，则认为它们是相同的。
+
+### 示例 1：
+> **输入：** p = [1,2,3], q = [1,2,3]
+> **输出：** true
+> **解释：** 两棵树的长相和对应节点的值完全一致。
+
+### 示例 2：
+> **输入：** p = [1,2], q = [1,null,2]
+> **输出：** false
+> **解释：** 结构对不上，一棵树的 2 在左边，另一棵在右边。
+
+---
+
+## 💡 核心通关秘籍（双线安检递归流 - 同步对比）
+
+这次我们要同时对比两棵树，这就好比海关有两个安检通道（`p` 和 `q`），我们要保证每一级进来的人（节点）都完全对得上。
+
+依然由大老板（当前节点）出面，同时检查 `p` 和 `q`：
+
+### 🚨 严丝合缝的 3 道安检防御线：
+1. **两边都是空的**（`not p and not q`）：两边都没人，这叫“完美的空虚”，说明这一路比对到头了都完全一样，**安全放行，返回 `True`**。
+2. **一边空，一边不空**（`not p or not q`）：如果走到某一步，`p` 通道有人，`q` 通道居然是个空位（或者反过来）。结构当场对不上，**立马逮捕，返回 `False`**。
+3. **两边都有人，但长相不同**（`p.val != q.val`）：虽然两个节点都存在，但是里面的数值不一样（比如一个装 1，一个装 2），**立马逮捕，返回 `False`**。
+
+### 👔 甩手掌柜的分发：
+如果上面 3 道安检都顺利通过，说明当前这一层的两个节点是完全合格且相等的！
+接下来大老板继续甩手：
+* 让左副总去同步比对两棵树的左边：`self.isSameTree(p.left, q.left)`
+* 让右副总去同步比对两棵树的右边：`self.isSameTree(p.right, q.right)`
+* **全场通关条件：** 必须左边完全相同，**且（`and`）** 右边也完全相同，整棵树才算真正相同！
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+二叉树的递归防御一旦写工整，逻辑简直赏心悦目：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
+        # 🚨 第一道防御线：如果两棵树都走到了空节点，说明一路比对过来完全一样，返回 True
+        if not p and not q:
+            return True
+            
+        # 🚨 第二道防御线：如果其中一棵树为空，另一棵不为空，结构对不上，返回 False
+        if not p or not q:
+            return False
+            
+        # 🚨 第三道防御线：如果两个节点都有值，但值不相等，返回 False
+        if p.val != q.val:
+            return False
+            
+        # ⚙️ 甩手掌柜分发：当前层合格！同时把左边交给左副总，右边交给右副总，两边都必须为 True
+        return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)
+```
+
