@@ -2017,46 +2017,33 @@ self.check(left.right, right.left)（内侧对比）
 💡 3. 江湖高级流派：如果不喜欢多写个函数，能不能玩真正的“纯嵌套”？
 老铁，既然你提到了“嵌套本身不好吗”，Python 还真有一种超级炫酷、极为闷骚的写法——“闭包（内嵌函数）”！
 
-Q: # Definition for a binary tree node.
+Q: 哪错了？
 
+```Python
+# Definition for a binary tree node.
 # class TreeNode:
-
 # def __init__(self, val=0, left=None, right=None):
-
 # self.val = val
-
 # self.left = left
-
 # self.right = right
 
 class Solution:
 
 def isSymmetric(self, root: Optional[TreeNode]) -> bool:
-
 if not root:
-
 return True
-
 return check(self.root.left, self.root.right)
 
-
 def check(self, left, right):
-
 if not left and not right:
-
 return True
-
 if not left or not right:
-
 return False
-
 if left.val != right.val:
-
 return False
-
 return check(left.left, right.right) and check(left.right, right.left)
+```
 
-哪错了 
 
 A: Python 肯定无情地抛出了两个报错：一个是 AttributeError: 'Solution' object has no attribute 'root'，另一个是 NameError: name 'check' is not defined。
 
@@ -2190,9 +2177,10 @@ def bfs(root):
                 queue.append(node.left)
             if node.right:
                 queue.append(node.right)
-
-
 ```
+
+---
+
 
 ---
 
