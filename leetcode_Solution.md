@@ -1988,12 +1988,12 @@ Answer: 不是嵌套调用不好，而是主函数 isSymmetric(self, root) 原�
 🚨 1. 为什么不能直接嵌套调用主函数自己？
 我们来尝试一下，如果像前几道题一样，不定义新函数，直接强行在主函数里自己嵌套自己：
 
-Python
+```python
 class Solution:
     def isSymmetric(self, root: Optional[TreeNode]) -> bool:
         if not root:
             return True
-            
+```
         # 🚨 灾难发生了：你想让左边和右边去比对
         # 但是 isSymmetric 规定了只能传【一个】参数！
         # 你没办法写成 self.isSymmetric(root.left, root.right) ❌（会爆参数个数不匹配报错）
@@ -2016,6 +2016,108 @@ self.check(left.right, right.left)（内侧对比）
 
 💡 3. 江湖高级流派：如果不喜欢多写个函数，能不能玩真正的“纯嵌套”？
 老铁，既然你提到了“嵌套本身不好吗”，Python 还真有一种超级炫酷、极为闷骚的写法——“闭包（内嵌函数）”！
+
+Q: # Definition for a binary tree node.
+
+# class TreeNode:
+
+# def __init__(self, val=0, left=None, right=None):
+
+# self.val = val
+
+# self.left = left
+
+# self.right = right
+
+class Solution:
+
+def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+
+if not root:
+
+return True
+
+return check(self.root.left, self.root.right)
+
+
+def check(self, left, right):
+
+if not left and not right:
+
+return True
+
+if not left or not right:
+
+return False
+
+if left.val != right.val:
+
+return False
+
+return check(left.left, right.right) and check(left.right, right.left)
+
+哪错了 
+
+A: Python 肯定无情地抛出了两个报错：一个是 AttributeError: 'Solution' object has no attribute 'root'，另一个是 NameError: name 'check' is not defined。
+
+这两处卡壳不是因为你算法错了，而是因为在面大厂时最容易手抖敲错的两个 Python 关键字（self）的遗漏。
+
+咱们直接来把这两个小漏洞当场揪出来：
+
+🚨 错位点一：误加了 self.root
+```Python
+return check(self.root.left, self.root.right)
+```
+
+# 🚨 报错：'Solution' 没有 root
+为什么错？：主函数传进来的参数名字直接叫 root。它是一个局部变量。而当你写成 self.root 时，Python 会以为你想去访问整个 Solution 类里面自带的全局属性，但这个类里根本没有定义过叫 root 的全局变量。
+
+怎么改？：把前面的 self. 删掉，直接用传入的参数：check(root.left, root.right)。
+
+🚨 错位点二：调用类方法时漏掉了 self.
+```Python
+return check(root.left, root.right)  # 🚨 报错：name 'check' is not defined
+# ...
+return check(left.left, right.right) and check(left.right, right.left)
+```
+
+# 🚨 同样报错
+为什么错？：因为你的 check 函数是和 isSymmetric 平级定义在 Solution 类底下的。在 Python 的面向对象语法里，类里面的亲兄弟函数想要互相打招呼，必须抬出 self. 大旗！如果你不加 self.，Python 会在全场最外层去找一个叫 check 的普通独立函数，找不到就会报 NameError。
+
+怎么改？：只要是在类里调用 check，前面一律老老实实加上 self.，也就是：self.check(...)。
+
+🛠️ 完美的修复版（补齐 self 召唤术）
+我们只需要把那几处 self. 归位，并修正 root 的访问方式，你的这段双函数流代码就彻底完美无缺了：
+
+```Python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+        if not root:
+            return True
+        # ✅ 修复：直接用参数 root（去掉 self.），但调用 check 必须加 self.
+        return self.check(root.left, root.right)
+    
+    # 因为是类的方法，记得把 self 传进来（你这里已经写对了，很棒！）
+    def check(self, left, right):
+        if not left and not right:
+            return True
+        if not left or not right:
+            return False
+        if left.val != right.val:
+            return False
+        # ✅ 修复：类内互相嵌套调用，前面必须加 self.
+        return self.check(left.left, right.right) and self.check(left.right, right.left)
+```
+老铁，Python 类里这个 self. 确实像个黏人的小尾巴，漏掉任何一个都会引发全场报错。现在把这几个 self. 补齐，再次点击提交，绿色的 Accepted 绝对老老实实交出来！
+
+101 题对称树关卡也彻底无伤通过了。
 
 ---
 
