@@ -2385,3 +2385,102 @@ class Solution:
 ⚔️ 去【大陆二·链表高阶微操】： 用 206 题体验三个指针在内存里大玩“乾坤大挪移”的原地翻转？
 
 ⚔️ 去【路线 A】： 回到我们上一张图纸的计划，去把二叉树 BFS 的层序变形题（103 题蛇形走位 / 111 题最短路径）给收割掉？发号施令吧，咱们的探险队随时可以开拔！
+
+---
+
+# 103. 二叉树的锯齿形层序遍历
+
+`中等` `二叉树` `广度优先搜索 (BFS)` `双端队列变形`
+
+## 📝 题目描述
+
+给你二叉树的根节点 `root` ，返回其节点值的 **锯齿形层序遍历** 。（即先从左往右，下一层从右往左，第三层再从左往右，依此类推，像蛇一样扭动着走）。
+
+### 示例 1：
+> **输入：** root = [3, 9, 20, null, null, 15, 7]
+> **输出：** [[3], [20, 9], [15, 7]]
+> **解释：**
+> 树的长相如下：
+>        3        --> 第一层（从左到右）：[3]
+>      /   \
+>     9     20     --> 第二层（从右到左）：[20, 9]
+>          /  \
+>         15   7    --> 第三层（从左到右）：[15, 7]
+
+---
+
+## 💡 核心通关秘籍（102 题模板 + 小账本 Stack 逆序流）
+
+老铁，千万别被题目里又是从左到右、又是从右到左的描述给绕晕了。我们要从计算机执行的底层机制建立框架思维：
+
+### 🚨 1. 外层平推轮盘：雷打不动的 Deque (队列)
+不管是普通层序还是锯齿层序，外面控制大节奏的始终是 **Deque**（`queue = deque([root])`）。因为只有严格遵守“先进先出”的排队铁律，老员工弹出来的同时，他们带出来的下一层家属才能去队尾排队，保证横向平推不退化。
+
+### 🚨 2. 内层小账本：偷梁换柱的 Stack (栈) 逻辑
+102 与 103 唯一的区别，就在于每一层小账本 `current_level` 记账的“姿势”不同。我们设立一个方向方向盘：`is_order_left = True`。
+* **从左到右（奇数层）**：普通的 Queue 模式。新弹出的节点值，老老实实**追加到小账本的屁股后面**（`current_level.append(node.val)`）。
+* **从右到左（偶数层）**：巧妙的 **Stack 模式**。新弹出的节点值，我们利用 `appendleft(node.val)` **强行插到小账本的最前面**。新来的总是坐在最前面，把前面的往后推，形成完美的**“后进先出 (LIFO)”**，当场把这一层的数据原地倒序！
+* **方向盘取反**：每一层结束，`is_order_left = not is_order_left`，丝滑切入下一层。
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+利用 `collections.deque` 的两端极致插入效率，我们依然可以套用你最熟悉的 `queue_size` 拍照锁死模板：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+from collections import deque
+
+class Solution:
+    def zigzagLevelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        # 1. 进来先防御，如果是空树，返回空列表
+        if not root:
+            return []
+            
+        result = []
+        queue = deque([root])  # 外层大轮盘，死死绑定 deque 负责横向平推
+        
+        # 💡 方向盘标志：默认第一层（奇数层）是从左到右
+        is_order_left = True
+        
+        # 2. 只要队列不空，平推扫描就不停
+        while queue:
+            queue_size = len(queue)  # 拍照快照，锁死当前层的总人数
+            current_level = deque()  # 💡 巧妙点：当前层小账本也用 deque，方便两头塞数字
+            
+            # 3. 严格执行 queue_size 次，只消耗当前层的员工
+            for _ in range(queue_size):
+                node = queue.popleft()  # 铁律：popleft 必须带括号 ()
+                
+                # ⚙️ 方向控制核心逻辑
+                if is_order_left:
+                    # 正常的 Queue 舞步：新来的去屁股后面排队
+                    current_level.append(node.val)
+                else:
+                    # 隐式的 Stack 舞步：新来的直接插到最前面（后进先出，原地反转！）
+                    current_level.appendleft(node.val)
+                
+                # 顺藤摸瓜：家属排队的顺序雷打不动，永远是先入左孩子，后入右孩子
+                if node.left:
+                    queue.append(node.left)
+                if node.right:
+                    queue.append(node.right)
+            
+            # 4. 当前层全员消耗完毕，把小账本转换成普通 list 送入最终大账本
+            result.append(list(current_level))
+            
+            # 🚨 灵魂一步：这一层走完了，方向盘立刻原地打满取反！
+            is_order_left = not is_order_left
+            
+        return result
+```
+
+---
+
