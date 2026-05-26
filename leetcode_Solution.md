@@ -2153,30 +2153,37 @@ class Solution:
 ```python
 from collections import deque
 
-def bfs(root):
-    # 如果是空树/空起点，直接退场
-    if not root:
-        return
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        # 1. 进来先防御，如果是空树，直接返回空列表
+        if not root:
+            return []
         
-    # 1. 核心武器：初始化一个队列，把起点（根节点）放进去排队
-    queue = deque([root])
-    
-    # 2. 只要队列不空，平推大轮盘就不停
-    while queue:
-        # 【分层专用可选步骤】：如果题目需要知道当前是第几层（比如 LeetCode 102 题）
-        # 就需要在这里给队列拍个照，死死锁死当前层的总人数
-        level_size = len(queue)
-        
-        for _ in range(level_size):
-            # 从队头弹出当前最该被处理的人
-            node = queue.popleft()
-            print(node.val)  # 正在访问当前节点
+        result = []
+        queue = deque([root])  # 初始化队列，让根节点率先入队
+
+        # 2. 只要队列不空，平推扫描就不停
+        while queue:
+            # 💡 核心精髓：提前拍照，锁死当前这一层一共有多少个节点
+            queue_size = len(queue)
+            current_level = []
+
+            # 3. 严格只执行 queue_size 次，保证只消耗当前层的员工
+            for _ in range(queue_size):
+                # 🚨 避坑指南：popleft 是个函数，必须加小括号 () 才能把节点真正弹出来！
+                node = queue.popleft()
+                current_level.append(node.val)
+
+                # 顺藤摸瓜：把他的下一代家属（左、右孩子）送到队尾去排队
+                if node.left:
+                    queue.append(node.left)
+                if node.right:
+                    queue.append(node.right)
+
+            # 4. 当前层全员消耗完毕，小账本打包送入最终大账本
+            result.append(current_level)
             
-            # 3. 顺藤摸瓜：把他的下一层邻居（左、右孩子）送到队尾去排队
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
+        return result
 ```
 
 ---
