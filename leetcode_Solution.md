@@ -2722,6 +2722,8 @@ class Solution:
 
 ---
 
+# 链表LinkedList
+
 ## LeetCode 206. 反转链表 (Easy)
 
 ### 📝 题目描述
@@ -2816,7 +2818,6 @@ cur = nxt       # cur 向右走一步，去到刚刚暂存的 nxt 位置
 
 这套核心指针策略通常出现在**链表翻转**或者**将二叉树原地修改为链表/双向链表**的题目中（多配合 DFS/中序遍历使用）。在面对需要处理前后指向关系的难题时，`head`、`pre`、`cur` 的核心策略可以总结为：**“稳住头，定住前，走好当前”**。
 
----
 
 ### 1. `head`（头节点）策略：只负责“一锚定音”
 * **核心策略**：只在第一次时赋值，之后绝不动摇。
@@ -2833,8 +2834,6 @@ cur = nxt       # cur 向右走一步，去到刚刚暂存的 nxt 位置
 * **主要职责**：在 DFS 遍历到当前节点时，它是一个“孤岛”。你首先要顺着遍历方向（比如中序遍历）找到它。
 * **记忆口诀**：到了 `cur`，先看 `pre` 在哪。如果 `pre` 不为空，就把 `pre` 和 `cur` 连起来。连完之后，放心把自己交棒给 `pre`。
 
----
-
 > **核心总结口诀**
 > * **`head` 见空即定，之后不变。**
 > * **`cur` 负责连线，当下算清。**
@@ -2843,6 +2842,48 @@ cur = nxt       # cur 向右走一步，去到刚刚暂存的 nxt 位置
 ### Q: 为什么return pre不是return head？ 
 
 一句话总结原因：当 while 循环结束时，head 还在原来的位置（变成了新链表的尾巴），而 pre 刚刚好走到了反转后新链表的“新头节点”上。为了让你彻底看明白，我们用一个简单的链表 1 -> 2 -> 3 -> None 来跑一遍代码，看看最后这三个指针分别指在哪里。初始化状态pre = Nonecur = head (指向节点 1)第一轮循环（处理节点 1）nxt = cur.next $\rightarrow$ nxt 指向 2cur.next = pre $\rightarrow$ 节点 1 的下一位变成 None（1 -> None）pre = cur $\rightarrow$ pre 走向节点 1cur = nxt $\rightarrow$ cur 走向节点 2此时的状态：head 依然是指向节点 1。第二轮循环（处理节点 2）nxt = cur.next $\rightarrow$ nxt 指向 3cur.next = pre $\rightarrow$ 节点 2 指向 1（2 -> 1 -> None）pre = cur $\rightarrow$ pre 走向节点 2cur = nxt $\rightarrow$ cur 走向节点 3第三轮循环（处理节点 3）nxt = cur.next $\rightarrow$ nxt 指向 Nonecur.next = pre $\rightarrow$ 节点 3 指向 2（3 -> 2 -> 1 -> None）pre = cur $\rightarrow$ pre 走向节点 3cur = nxt $\rightarrow$ cur 走向 None关键点：循环结束！当第四轮循环开始前，代码检查 while cur:。因为此时 cur 已经是 None 了，循环瞬间终止。这时候我们来看看这三个指针各自在哪里：head：从未移动过，它依然死死地指向节点 1。可现在节点 1 已经是链表的最后一个节点了（1.next 是 None）。如果你 return head，你就只能拿到一个 [1]。cur：已经跨过了边界，变成了 None。如果你 return cur，你就什么都没返回（None）。pre：刚刚好停在节点 3 上！而整个链表现在已经变成了 3 -> 2 -> 1 -> None。节点 3 正是这个反转后新链表的新头节点。所以，我们必须 return pre，才能顺藤摸瓜拿到完整的、反转后的新链表。
+
+---
+
+为了让你彻底吃透链表，我们将按照“巩固单链表 $\rightarrow$ 进阶双向链表 $\rightarrow$ 掌握循环链表”的路线前进。以下我为你精选的 3 道最具代表性的经典题目，它们能把你的“三指针策略”发挥到极致！第一步：复习与巩固单向链表
+
+📌 推荐题目：LeetCode 92. 反转链表 II (Reverse Linked List II)
+
+题目大意：给你单链表的头指针 head 和两个整数 left 和 right，其中 left <= right。请你反转从位置 left 到位置 right 的链表节点，返回反转后的链表。
+
+为什么选这道题：这是 206 题的升级版。206 是全量反转，而这道题是局部反转。
+
+核心策略应用：
+
+* head 策略：因为反转的可能包含原头节点（比如从位置 1 开始反转），这里强烈建议引入一个 dummy（虚拟头节点）。让 dummy.next = head，这样无论怎么反转，dummy 永远能帮你“稳住头”。
+* pre 和 cur 策略：你需要先用一个指针走到 left 的前一个位置（定住前），然后在其内部实施类似 206 题的局部反转，“走好当前”。第二步：进阶双向链表 (Doubly Linked List)在单向链表中，指针只能往前走（next），一旦错过就回不去了。而双向链表每个节点多了个 prev 指针，可以往前走。
+* 它的难点在于：每次连线，都要同时照顾到 next 和 prev 两个方向。
+
+📌 推荐题目：LeetCode 426. 将二叉搜索树转化为排序的双向链表 (Convert Binary Search Tree to Sorted Doubly Linked List)(注：如果 LeetCode 需要会员，可在网络搜索该题，它是最经典的双向链表题)
+
+题目大意：将一个二叉搜索树（BST）原地转化为一个循环的双向链表。链表中的每个节点都有一个前驱指针和后继指针，且链表中的元素需要按升序排列。
+
+为什么选这道题：这道题能完美闭环你最开始提到的 head, pre, cur 策略！
+
+核心策略应用（中序遍历 DFS）：
+
+* head 策略：当中序遍历到第一个（最左边）节点时，这个节点就是最小的元素，立刻一锚定音 head = cur。
+* pre 和 cur 策略：当 pre 不为空时，我们要织一张双向网：Pythonpre.right = cur  # 后继指针
+cur.left = pre   # 前驱指针
+
+处理完当前节点，立刻交棒：pre = cur。第三步：掌握循环链表 (Circular Linked List)循环链表的特点是首尾相连（尾节点的 next 指向头节点）。在解决循环链表问题时，最核心的技巧是“快慢指针 (Two Pointers / Floyd's Cycle-Finding)”。
+
+📌 推荐题目：LeetCode 141. 环形链表 (Linked List Cycle)
+
+题目大意：给你一个链表的头节点 head，判断链表中是否有环。
+
+为什么选这道题：这是所有循环链表/环形结构的鼻祖题。
+
+核心策略（快慢指针）：
+
+* 策略：想象两个运动员在环形跑道上赛跑，一个跑得快（fast，每次走两步），一个跑得慢（slow，每次走一步）。
+* 逻辑：如果链表没有环，快指针 fast 会率先走到 None（终点）；如果链表有环，快指针和慢指针一定会在环里的某个位置相遇（重合）。
+* 口诀：slow = slow.next, fast = fast.next.next。只要 fast == slow，则必有环。
 
 ---
 
