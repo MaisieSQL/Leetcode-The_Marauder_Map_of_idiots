@@ -2889,3 +2889,84 @@ cur.left = pre   # 前驱指针
 
 ---
 
+## LeetCode 92. 反转链表 II (Reverse Linked List II)
+
+## 1. 题目描述
+
+### 提示
+* 链表中节点数目为 `n`
+* `1 <= n <= 500`
+* `-500 <= Node.val <= 500`
+* `1 <= left <= right <= n`
+
+---
+
+## 2. 核心解析：穿针引线法（头插法）
+
+这道题与 206 题（全局反转）的核心区别在于：它是**局部反转**。就像一列火车，中间某几节车厢需要原地调头，但调头后必须和前后的车厢重新保持连接。
+
+为了实现只遍历一次链表且不切断链表，我们采用最优雅的**“头插法”**。
+
+### 核心指针定义
+我们需要定义三个核心指针：
+* **`g` (guard / 哨兵)**：永远指向反转区间的前一个节点（即 `left - 1` 的位置）。它在整个过程中**固定不动**，用来稳住大局。
+* **`p` (point / 起点)**：永远指向反转区间的第一个节点（即原本的 `left` 位置）。随着反转的进行，它会不断往后移，最终变成该区间的尾节点。
+* **`nxt` (后继 / 搬运工)**：每一次循环中，`p` 后面的那个节点。我们的目标是把它“拔出来”，插到 `g` 的后面。
+
+### 穿针引线三步走（循环 `right - left` 次）
+每一次循环，我们都把 `p` 后面的节点 `nxt` 强行插入到 `g` 的后面。
+
+以 `1 -> 2 -> 3 -> 4 -> 5`，`left=2, right=4` 为例，此时 `g` 指向 `1`，`p` 指向 `2`：
+
+* **第一步：暂存/架空（让 `p` 跳过 `nxt`）**
+  ```python
+  p.next = nxt.next  # (2 指向 4)
+ 
+  ```
+* **第二步：织网/调头（让 nxt 指向反转区间当前的新头部）
+ 
+```Python
+nxt.next = g.next  # (3 指向 2)
+```
+
+* **第三步：缝合/连接（让 g 接住刚移过来的 nxt）
+
+```Python
+g.next = nxt       # (1 指向 3)
+```
+
+* **整个过程 g 没动，p 没动，但 3 成功被“瞬移”到了 1 和 2 的中间。重复这个过程，直到区间反转完毕。
+
+
+```Python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+
+class Solution:
+    def reverseBetween(self, head: Optional[ListNode], left: int, right: int) -> Optional[ListNode]:
+        # 1. 稳住头策略：引入虚拟头节点，防止 left = 1 时原 head 被卷入反转而丢失
+        dummy = ListNode(0)
+        dummy.next = head
+        
+        # 2. 定住前策略：让 g 指针走到 left 的前一个位置
+        g = dummy
+        for _ in range(left - 1):
+            g = g.next
+            
+        # 3. 走好当前策略：p 是反转区间的第一个节点
+        p = g.next
+        
+        # 4. 穿针引线：反转 right - left 次
+        for _ in range(right - left):
+            nxt = p.next        # 找到当前要搬运的节点 nxt
+            
+            p.next = nxt.next   # 第一步：p 跨过 nxt，指向更后面
+            nxt.next = g.next   # 第二步：nxt 调头，指向当前区间的新头部
+            g.next = nxt        # 第三步：g 接住 nxt
+            
+        # 最终 dummy.next 永远指向新链表的正确头节点
+        return dummy.next
+        ```
