@@ -3060,3 +3060,53 @@ class Solution:
         # 3. 递归右子树
         self.dfs(cur.right)
 ```
+---
+
+# 关于链表的讨论
+
+1. 单向列表 Singly Linked List
+
+```Python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val        # 节点里存的值
+        self.next = next      # 指向下一个节点的指针（下一站线索）
+```
+
+2. 双向列表 Doubly Linked List
+
+```Python
+class Node:
+    def __init__(self, val=0, prev=None, next=None):
+        self.val = val        # 节点里存的值
+        self.prev = prev      # 指向上一个节点的指针（回头的线索）
+        self.next = next      # 指向下一个节点的指针（前行的线索）
+```
+
+3. 循环列表
+
+```Python
+# 这就是最普通的单向链表节点定义，和 206 题一模一样
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+# 第一步：创建三个普通的节点
+node1 = ListNode(1)
+node2 = ListNode(2)
+node3 = ListNode(3)
+
+# 第二步：把它们连成一条普通的单向链表
+node1.next = node2  # 1 -> 2
+node2.next = node3  # 1 -> 2 -> 3
+# 此时，node3.next 默认是 None。这是一条普通的单向链表。
+
+# 第三步：让最后一个节点指向头节点，奇迹发生了！
+node3.next = node1  # 3 的下一站又回到了 1
+```
+
+# 传说中的三指针解法。。。是解决链表问题的主要方法
+
+---
+
