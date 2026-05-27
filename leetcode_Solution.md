@@ -2589,3 +2589,178 @@ print(q)  # 输出: deque([3, 2, 1, 10])  <-- 🚨 变成倒序了！
 
 ---
 
+# 📚 LeetCode 刷题笔记
+
+---
+
+## 🧭 LeetCode 103. 二叉树的锯齿形层序遍历 (Medium)
+
+### 📝 题目描述
+给你二叉树的根节点 `root` ，返回其节点值的 **锯齿形层序遍历** 。（即先从左往右，再从右往左进行下一层，左右交替。第一层从左到右，第二层从右到左，以此类推）。
+
+### 💡 核心解析
+这道题是标准**层序遍历（BFS）**的变体。
+* **核心不变点**：为了保证层序的正确性，队列（`queue`）拓展下一层节点时，永远保持**先左后右**的顺序入队。
+* **锯齿形实现**：我们不换节点的入队顺序，只在**记录当前层结果**（`current_level`）时动脑筋。利用双端队列（`deque`）：
+  * **奇数层（从左到右）**：使用 `append()`，正常从尾部追加。
+  * **偶数层（从右到左）**：使用 `appendleft()`，每次把新值插到头部，自动实现逆序。
+
+### 💻 正确代码 (Python)
+```python
+from collections import deque
+from typing import Optional, List
+
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def zigzagLevelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        if not root:
+            return []
+        
+        queue = deque([root])
+        result = []
+        is_order_left = True # 标记当前层是否从左往右
+
+        while queue:
+            queue_size = len(queue)
+            current_level = deque() # 使用双端队列存储当前层结果
+
+            for _ in range(queue_size):
+                node = queue.popleft()
+
+                # 根据方向决定从尾部加还是从头部加
+                if is_order_left:
+                    current_level.append(node.val)
+                else:
+                    current_level.appendleft(node.val)
+                
+                # 下一层节点依然保持先左后右入队
+                if node.left:
+                    queue.append(node.left)
+                if node.right:
+                    queue.append(node.right)
+            
+            result.append(list(current_level))
+            is_order_left = not is_order_left # 层数切换，方向取反
+            
+        return result
+```
+
+---
+
+## 🧭 LeetCode 111. 二叉树的最小深度 (Easy)
+
+### 📝 题目描述
+给定一个二叉树，找出其最小深度。最小深度是从根节点到最近叶子节点的最短路径上的节点数量。说明：叶子节点是指没有子节点的节点。
+
+
+
+### 💡 核心解析
+求最短路径，最推荐使用 BFS。
+
+* 为什么用 BFS：BFS 是一层一层向下推进的。一旦我们在某一层的节点中，发现它既没有左孩子，也没有右孩子（即 not node.left and not node.right），这就说明它就是全树距离根节点最近的那个叶子节点。我们不需要再遍历剩下的节点，直接返回当前深度。
+
+* 语法注意点：初始化队列时 queue = deque([(root, 1)]) 这里的 [] 是为了把 (root, 1) 作为一个整体打包塞进队列容器中。
+
+### 💻 正确代码 (Python)
+```python
+from collections import deque
+from typing import Optional
+
+class Solution:
+    def minDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        
+        # 队列中存放二元组: (当前节点, 当前节点所在的深度)
+        queue = deque([(root, 1)])
+
+        while queue:
+            node, depth = queue.popleft()
+
+            # 关键：一旦遇到第一个真正的叶子节点，立刻返回深度
+            if not node.left and not node.right:
+                return depth
+                
+            if node.left:
+                queue.append((node.left, depth + 1))
+            if node.right:
+                queue.append((node.right, depth + 1))
+                
+        return 0
+```
+
+---
+
+## 🧭 LeetCode 700. 二叉搜索树中的搜索 (Easy)
+
+### 📝 题目描述给定二叉搜索树（BST）的根节点 root 和一个整数值 val。如果在 BST 中找到节点值等于 val 的节点，返回以该节点为根的子树。如果节点不存在，则返回 null 。
+
+### 💡 核心解析二叉搜索树（BST）拥有极强的“左小右大”的性质：若目标值 val < root.val，则目标必定在左子树。若目标值 val > root.val，则目标必定在右子树。利用这个性质，我们可以像在有序数组中做二分查找一样，每次直接排除掉一半的树，从而用简单的 while 循环（迭代法）以 $O(1)$ 的空间复杂度定向搜索，根本不需要动用大面积遍历的 DFS 或 BFS。
+
+### 💻 正确代码 (Python)
+```python
+from typing import Optional
+
+class Solution:
+    def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        current = root # 引入 current 变量是为了保护原 root 引用并提高代码可读性
+        
+        # 当节点不为空，且还没找到目标值时，持续向下搜寻
+        while current and current.val != val:
+            if val < current.val:
+                current = current.left # 目标小，往左走
+            else:
+                current = current.right # 目标大，往右走
+                
+        return current
+```
+
+---
+
+## LeetCode 206. 反转链表 (Easy)
+
+### 📝 题目描述
+给你单链表的头节点 head ，请你反转链表，并返回反转后的链表。
+
+### 💡 核心解析
+本题的核心考点在于指针的动态修改。这里提供面试中最通用、最不易出错的“双指针平推法”。
+
+* 思路：让 pre（前任）和 cur（当前）两个指针像步兵一样齐头并进。
+
+### 操作四部曲：
+
+* 先用临时变量 next_node 存下 cur.next（免得断开后找不到后面的路）。
+
+* 核心反转：将当前节点的箭头调头，指向前任（cur.next = pre）。
+
+* pre 向右移动一步，占领 cur 的位置（pre = cur）。
+
+* cur 向右移动一步，去往刚才存好的下一步（cur = next_node）。
+
+### 💻 正确代码 (Python)
+```python
+from typing import Optional
+
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+
+class Solution:
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        pre = None # 反转后，原先的头节点前面应该是 None
+        cur = head
+        
+        while cur:
+            next_node = cur.next  # 1. 临时保存下一个节点，防止断链
+            cur.next = pre        # 2. 核心：将当前节点的指针反向指向前方
+            pre = cur             # 3. pre 指针向前挪动一步
+            cur = next_node       # 4. cur 指针向前挪动一步
+            
+        return pre # 退出循环时，pre 正好指向原链表的末尾（即新链表的头）
+```
