@@ -2840,7 +2840,7 @@ cur = nxt       # cur 向右走一步，去到刚刚暂存的 nxt 位置
 > * **`cur` 负责连线，当下算清。**
 > * **`pre` 步步紧跟，尾随交棒。**
 
-### Q: 为什么return pre不是returnhead？ 
+### Q: 为什么return pre不是return head？ 
 
 一句话总结原因：当 while 循环结束时，head 还在原来的位置（变成了新链表的尾巴），而 pre 刚刚好走到了反转后新链表的“新头节点”上。为了让你彻底看明白，我们用一个简单的链表 1 -> 2 -> 3 -> None 来跑一遍代码，看看最后这三个指针分别指在哪里。初始化状态pre = Nonecur = head (指向节点 1)第一轮循环（处理节点 1）nxt = cur.next $\rightarrow$ nxt 指向 2cur.next = pre $\rightarrow$ 节点 1 的下一位变成 None（1 -> None）pre = cur $\rightarrow$ pre 走向节点 1cur = nxt $\rightarrow$ cur 走向节点 2此时的状态：head 依然是指向节点 1。第二轮循环（处理节点 2）nxt = cur.next $\rightarrow$ nxt 指向 3cur.next = pre $\rightarrow$ 节点 2 指向 1（2 -> 1 -> None）pre = cur $\rightarrow$ pre 走向节点 2cur = nxt $\rightarrow$ cur 走向节点 3第三轮循环（处理节点 3）nxt = cur.next $\rightarrow$ nxt 指向 Nonecur.next = pre $\rightarrow$ 节点 3 指向 2（3 -> 2 -> 1 -> None）pre = cur $\rightarrow$ pre 走向节点 3cur = nxt $\rightarrow$ cur 走向 None关键点：循环结束！当第四轮循环开始前，代码检查 while cur:。因为此时 cur 已经是 None 了，循环瞬间终止。这时候我们来看看这三个指针各自在哪里：head：从未移动过，它依然死死地指向节点 1。可现在节点 1 已经是链表的最后一个节点了（1.next 是 None）。如果你 return head，你就只能拿到一个 [1]。cur：已经跨过了边界，变成了 None。如果你 return cur，你就什么都没返回（None）。pre：刚刚好停在节点 3 上！而整个链表现在已经变成了 3 -> 2 -> 1 -> None。节点 3 正是这个反转后新链表的新头节点。所以，我们必须 return pre，才能顺藤摸瓜拿到完整的、反转后的新链表。
 
