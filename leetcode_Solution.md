@@ -2976,3 +2976,87 @@ class Solution:
         # 最终 dummy.next 永远指向新链表的正确头节点
         return dummy.next
 ```
+
+---
+
+# LeetCode 426. 将二叉搜索树转化为排序的双向链表 (Convert Binary Search Tree to Sorted Doubly Linked List)
+
+太难了！！！！！！！看不懂！！！！！！！！T-T
+
+
+这道题非常高级，它完美地把你之前学到的 **`head`（一锚定音）**、**`pre`（承上启下）**、**`cur`（当下孤岛）** 三指针策略，与**二叉树的中序遍历 (DFS)** 结合在了一起。同时，它还要求链表是**循环的**。
+
+---
+
+## 1. 核心解析：中序遍历 + 三指针织网
+
+二叉搜索树（BST）有一个天然的特性：**它的中序遍历（左 $\rightarrow$ 根 $\rightarrow$ 右）出来的序列，刚好是严格升序排列的。**
+
+所以，我们只需要一边进行中序遍历，一边用你的三指针心法来“织网”。
+
+### 三指针策略应用：
+
+* **`head` 策略（一锚定音）**
+  * **应用时机**：当我们中序遍历走到**最左底部的叶子节点**时，它就是整棵树最小的节点，也是链表的起点。
+  * **具体操作**：此时如果 `pre` 还是 `None`，立刻一锚定音：`self.head = cur`。
+
+* **`pre` 与 `cur` 策略（承上启下）**
+  * **应用时机**：如果 `pre` 不为空，说明前面已经有连好的节点了。
+  * **具体操作**：我们要织一张双向网：
+    1. **让前驱指向当前**：`self.pre.right = cur` *(在双向链表中，`right` 充当 `next`)*
+    2. **让当前指向前驱**：`cur.left = self.pre` *(在双向链表中，`left` 充当 `prev`)*
+
+* **交棒更新（为后人铺路）**
+  * **具体操作**：当前节点 `cur` 处理完的最后一步，立刻让 `self.pre = cur`，为下一个节点铺路。
+
+```Python
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left   # 在双向链表中充当 prev
+        self.right = right # 在双向链表中充当 next
+"""
+
+class Solution:
+    def treeToDoublyList(self, root: 'Optional[Node]') -> 'Optional[Node]':
+        if not root:
+            return None
+            
+        # 初始化全局/类变量
+        self.pre = None
+        self.head = None
+        
+        # 开始深度优先搜索（中序遍历）
+        self.dfs(root)
+        
+        # 此时整个中序遍历结束，pre 停在最右边的最大节点，head 停在最左边的最小节点
+        # 进行最后一步：首尾相连，形成循环链表
+        self.head.left = self.pre
+        self.pre.right = self.head
+        
+        return self.head
+
+    def dfs(self, cur):
+        if not cur:
+            return
+        
+        # 1. 递归左子树
+        self.dfs(cur.left)
+        
+        # 2. 处理当前节点 cur (核心三指针心法)
+        if not self.pre:
+            # head 策略：见空即定，锚定新链表的头
+            self.head = cur
+        else:
+            # pre 策略：双向织网
+            self.pre.right = cur
+            cur.left = self.pre
+            
+        # 交棒：当前节点变成下一个节点的前驱
+        self.pre = cur
+        
+        # 3. 递归右子树
+        self.dfs(cur.right)
+```
