@@ -1,4 +1,7 @@
-# 05/08/2026 今天我们来做Array的题，利用双指针，Dict等办法
+# 05/08/2026-05/27/2026 
+
+05/08/2026 今天我们来做Array的题，利用双指针，Dict等办法
+
 ## 1. Two Sum
 Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.
 
