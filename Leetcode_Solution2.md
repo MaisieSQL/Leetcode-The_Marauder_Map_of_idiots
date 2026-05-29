@@ -225,30 +225,30 @@ from typing import List
 
 class Solution:
     def permute(self, nums: List[int]) -> List[List[int]]:
-        res = []    # 大账本：存放所有符合条件的全排列
-        path = []   # 小背包：记录当前路径已经选了哪些数字
+        res = []
+        path = []
+        # 💡 引入你的绝杀武器：用字典（或集合）来记录哪个数字被用过了
+        used = {}  # 也可以用 used = set()
         
         def backtrack():
-            # ─── 1. 递归出口（撞南墙条件） ───
-            # 当背包里的数字个数和题目给的一样多，说明拼出了一个完整的组合
             if len(path) == len(nums):
-                # ⚠️【大厂超级大坑】：必须用 path[:] 或者是 path.copy()
-                # 传递的是切片（深拷贝）！如果直接 append(path)，后续的 pop() 会把 res 里的内容全部洗掉！
                 res.append(path[:])
                 return
             
-            # ─── 2. 横向遍历（每一层的选择列表） ───
             for num in nums:
-                # 过滤不合法选择：全排列里同一个数不能重复在一个组合里出现
-                if num in path:
+                # 💡 核心优化：从 O(N) 的列表查找，降维打击到 O(1) 的字典查找！
+                if used.get(num, False):  # 或者 if num in used:
                     continue
                 
-                # ─── 3. 核心微操三部曲 ───
-                path.append(num)  # Step 1: 做选择（把数装进背包）
-                backtrack()       # Step 2: 深入递归（顺着这个分支去看下一层能选啥）
-                path.pop()        # Step 3: 撤销选择（吃后悔药！把刚才加进去的数吐出来）
+                # 🌟 核心微操四部曲（带上你的字典状态）
+                path.append(num)
+                used[num] = True      # 1. 在字典里标记：这个数我占了
                 
-        # 从空背包开始递归
+                backtrack()
+                
+                path.pop()
+                used[num] = False     # 2. 撤销选择：在字典里释放这个数，给别人用
+                
         backtrack()
         return res
 ```
