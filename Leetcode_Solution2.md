@@ -397,3 +397,95 @@ class Solution:
 ```
 * 时间复杂度：$O(N \times 2^N)$。最坏情况下（无重复元素）总共有 $2^N$ 个子集，每次拷贝需要 $O(N)$ 的时间。原地排序的时间复杂度为 $O(N \log N)$，在整体复杂度中被忽略不计。
 * 空间复杂度：$O(N)$。递归栈的最大深度为 $N$。
+--------------------------------------------------------------------------------------------------------------------
+
+# 2196. 根据描述创建二叉树
+
+`中等` `二叉树` `哈希表` `逆向构造树` `高频工程实战题`
+
+## 📝 题目描述
+
+给你一个二维整数数组 `descriptions` ，其中 `descriptions[i] = [parent_i, child_i, isLeft_i]` 表示还有一棵二叉树中 `parent_i` 是 `child_i` 的 **父节点**。
+* `isLeft_i == 1` 表示 `child_i` 是 `parent_i` 的 **左孩子**。
+* `isLeft_i == 0` 表示 `child_i` 是 `parent_i` 的 **右孩子**。
+
+请你根据这些描述**构造出这棵二叉树**，并返回它的 **根节点 (Root)** 。
+
+### 示例 1：
+> **输入：** descriptions = [[20,15,1],[20,17,0],[50,20,1],[50,80,0],[80,19,1]]
+> **输出：** [50,20,80,15,17,19]
+> **解释：**
+> 零散的关系拼起来后，整棵树长这样：
+>         50
+>       /    \
+>     20      80
+>    /  \    /
+>  15   17  19
+> 根节点是 50。
+
+---
+
+## 💡 核心通关秘籍（工厂流水线制造法 + 孤儿院找爸爸）
+
+这道题如果直接用传统的递归或者人肉去树里找节点，你会写得痛苦不堪，而且时间复杂度会直接爆炸。作为一名优秀的工程师，我们用**“解耦思维”**把这个问题拆成两步：
+
+### 🎬 第一步：零件工厂流水线（利用哈希表 `dict` 疯狂造人）
+题目给我们的都是数字（比如 `50`，`20`）。在内存里，它们还不是正式的 `TreeNode` 对象。
+1. 我们准备一个“花名册哈希表”：`nodes = {}`。
+2. 只要遇到一个数字，先去花名册里查，如果没来过，就地现造一个：`nodes[val] = TreeNode(val)`。
+3. 这样我们就能在 $O(1)$ 时间内，随时揪出任何一个父节点和子节点的对象，然后根据 `isLeft` 是 `1` 还是 `0`，像拼乐高一样把它们无脑连起来：`parent_node.left = child_node`。
+
+### 🎬 第二步：全场寻找大老板（利用集合 `set` 揪出根节点）
+树的关系全部连好了，但我们怎么知道谁是整棵树的**大老板（Root，根节点）**呢？
+* **黄金逻辑：** 在一棵合法的二叉树里，**除了根节点之外，全场所有的节点都一定有且仅有一个爸爸！只有根节点是“无父无母”的。**
+* **破局战术：** 我们准备一个“孩子集合”：`children = set()`。在连线的时候，只要谁当了别人的儿子，就一把扔进这个集合里。最后，我们遍历所有的父节点，**谁不在这个孩子集合里，谁就是那个高高在上的大老板！**
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+带上这套流水线大局观，看代码写起来有多顺理成章：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def createBinaryTree(self, descriptions: List[List[int]]) -> Optional[TreeNode]:
+        # 1. 初始化我们的两大核心武器
+        nodes = {}         # 花名册字典：[数字] -> [实际的TreeNode对象]
+        children = set()   # 孩子集合：用来登记全场所有当了别人孩子的数字
+        
+        # 2. 第一步：流水线拼装二叉树
+        for parent_val, child_val, is_left in descriptions:
+            # 💡 零件工厂：如果父节点/子节点在花名册里没有，就当场现造一个！
+            if parent_val not in nodes:
+                nodes[parent_val] = TreeNode(parent_val)
+            if child_val not in nodes:
+                nodes[child_val] = TreeNode(child_val)
+                
+            # 抓出它们的真实对象指针
+            parent_node = nodes[parent_val]
+            child_node = nodes[child_val]
+            
+            # ⚙️ 像拼乐高一样连线
+            if is_left == 1:
+                parent_node.left = child_node
+            else:
+                parent_node.right = child_node
+                
+            # 🚨 核心标记：把当了孩子的数字送入 children 集合登记
+            children.add(child_val)
+            
+        # 3. 第二步：全场寻找大老板（谁没当过别人的孩子，谁就是 Root）
+        for parent_val, _, _ in descriptions:
+            if parent_val not in children:
+                # 揪出来了！直接去花名册里拿到它的TreeNode对象返回
+                return nodes[parent_val]
+                
+        return None
+```
