@@ -487,6 +487,100 @@ class Solution:
                 
         return None
 ```
+----------------------------------------------------------------------------------------------------------------------
+
+
+战术看板：今日清单实时战况
+~~LeetCode 103. 锯齿形层序遍历~~（已无伤斩杀 🏆）
+~~LeetCode 2196. 根据描述创建二叉树~~（已硬核填坑 🏆）
+
+LeetCode 111. 二叉树的最小深度 👈 【当前合围目标 A】
+
+LeetCode 700. 二叉搜索树中的搜索 👈 【当前合围目标 B】
+
+LeetCode 206. 反转链表（指针乾坤大挪移，待命）
+
+四大高级新大陆新手村（回溯、动规、贪心、分治各 3 题，待命）
 
 ---
 
+# 111. Minimum Depth of Binary Tree
+
+`Easy` `二叉树` `广度优先搜索 (BFS)` `元组带权入队流`
+
+## 📝 Description
+
+Given a binary tree, find its minimum depth.
+
+The **minimum depth** is the number of nodes along the shortest path from the root node down to the nearest leaf node.
+
+**Note:** A leaf is a node with no children.
+
+### Example 1:
+> **Input:** root = [3,9,20,null,null,15,7]
+> **Output:** 2
+> **Explanation:** The shortest path is from root `3` to leaf `9`, which has a depth of 2.
+
+### Example 2:
+> **Input:** root = [2,null,3,null,4,null,5,null,6]
+> **Output:** 5
+
+### Constraints:
+* The number of nodes in the tree is in the range $[0, 10^5]$.
+* $-1000 \le \text{Node.val} \le 1000$
+
+---
+
+## 💡 核心漏洞深度解剖（为什么原代码会卡死报错？）
+
+[cite_start]你的解法采用“元组自带 GPS 导航”的思路，让每个节点入队时自带深度属性，非常具有工业级工程思维 [cite: 133][cite_start]。但原版代码中藏着 3 个语法硬伤和 1 个逻辑盲点 [cite: 134]：
+
+1. [cite_start]**双端队列初始化参数错误 (`TypeError`)**：`deque()` 的内部必须接收一个**可迭代对象**（如列表 `[]`）。直接传入元组 `deque((root, 1))` 会引发解包崩溃 [cite: 134][cite_start]。且末尾的右括号 `）` 误敲成了中文全角括号 [cite: 134]。
+2. [cite_start]**`append()` 函数参数超载 (`TypeError`)**：在 Python 中，`append()` 只能接收**一个**参数。写成 `myqueue.append(node, depth)` 会报错 [cite: 134][cite_start]。必须用小括号将其重新打包成单一元组：`myqueue.append((node, depth))` [cite: 134]。
+3. [cite_start]**三元表达式语法错误 (`SyntaxError`)**：Python 中没有其他语言的 `if-then-else` 关键字 [cite: 135]。
+4. [cite_start]**🚨 致命逻辑盲点**：原代码没有在循环内部设置 `return` 语句，导致程序傻傻地遍历了全场所有节点，直接废掉了 BFS 的**最短路径光环** [cite: 135][cite_start]！BFS 的灵魂就在于：**一旦在横向平推中撞见第一个既没有左孩子、又没有右孩子的纯叶子节点，它绝对就是最近的，必须当场直接返回深度提款跑路** [cite: 135, 136]！
+
+---
+
+## 💻 完美 Python3 通关代码（元组带权 GPS 导航流）
+
+[cite_start]顺着你的最初心路历程，我们将语法细节全部修复，并装配上“撞见叶子立即提款”的雷达检测器 ：
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+from collections import deque
+
+class Solution:
+    def minDepth(self, root: Optional[TreeNode]) -> int:
+        # Case 1: Corner case 进来先防御，空树深度直接为 0
+        if not root:
+            return 0
+            
+        # Case 2: ✅ 修复：用英文规范括号，且必须用列表 [] 包裹初始元组
+        myqueue = deque([(root, 1)])
+
+        while myqueue:
+            # 弹出当前节点，并解包出它自带的“深度 GPS 导航”
+            mynode, mydepth = myqueue.popleft()
+            
+            # 🚨 ✅ 灵魂修正：装配核心雷达！一旦撞见全场第一个“无家属”的纯叶子节点
+            if not mynode.left and not mynode.right:
+                # 广度优先自带的最短路径光环发挥威力，直接当场带着深度提款跑路！
+                return mydepth
+            
+            # ✅ 修复：将节点和更新后的深度重新打包成【单一元组】传入 append
+            if mynode.left:
+                myqueue.append((mynode.left, mydepth + 1))
+            if mynode.right:
+                myqueue.append((mynode.right, mydepth + 1))
+        
+        return 0
+```
+
+---
