@@ -584,3 +584,83 @@ class Solution:
 ```
 
 ---
+
+# 700. Search in a Binary Search Tree (三轨流终极对比)
+
+> [cite_start]**前言：** 二叉搜索树（BST）的黄金铁律——**左子树全小，右子树全大** [cite: 130][cite_start]。无论用哪种形态的代码，核心战术都是：**目标值小了就无脑左转，大了就无脑右转，每一步直接干掉半棵树！** [cite: 130, 142]
+
+---
+
+## 🛠️ 方法一：直接迭代流（While 循环 · 空间之王）
+
+> [cite_start]**🚀 战术精髓：** 纯度 100% 的迭代。不借助系统递归栈，也不开辟任何队列，单枪匹马用一个 `while` 指针顺着楼梯一步一步往下踩 。这是工业界最推崇的写法，因为空间开销是绝对完美的 $O(1)$！
+
+
+```python
+class Solution:
+    def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        # 只要指针没走到尽头（None），且还没撞见我们要找的 val，就顺着导航死磕往下走
+        while root and root.val != val:
+            # 🧭 黄金导航：小了往左打方向盘，大了往右打方向盘
+            if val < root.val:
+                root = root.left
+            else:
+                root = root.right
+                
+        # [cite_start]退出循环时，要么是 root 撞上目标节点了，要么是走到尽头变成 None 了 [cite: 144]
+        return root
+```
+
+## 🎭 方法二：DFS 递归流（深度优先形式 · 极其优雅）
+
+> [cite_start]** 🚀 战术精髓： 形式上是 DFS 递归（顺着树枝一条路走到黑），但骨子里由于“单线深入”，它绝对不会发生常规 DFS 那种“左右两边都去试”的分叉穷举 ！写它纯粹是因为代码少，写起来像写诗 。
+
+```python
+class Solution:
+    def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        # 🧱 终极防线：碰空了（没找到）或者当场抓获值相等了，直接原样交差返回 [cite: 144]
+        if not root or root.val == val:
+            return root
+            
+        # 🧭 极速导航：目标值小，右边的一大半树枝直接不要，打包 luggage 去左子树顶层 [cite: 142, 147]
+        if val < root.val:
+            return self.searchBST(root.left, val)
+        # 目标值大，左边全部原地开除，打包无脑右转 [cite: 142, 147]
+        else:
+            return self.searchBST(root.right, val)
+```
+
+## 🌊 方法三：BFS 队列流（广度优先形式 · 降维微操）
+
+> [cite_start]** 🚀 战术精髓： 很多老铁以为 BFS 必须“一层一层铺满了扫描”。错！那是普通树！在 BST 里，既然我们有 GPS 导航，即便是用 queue 队列平推，我们在任何时候也只让满足大小方向的那“一个”孩子入队！队列里永远最多只有一个幸存者，堪称 BFS 里的刺客流。
+
+```python
+from collections import deque
+
+class Solution:
+    def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        if not root:
+            return None
+            
+        # 初始化双端队列
+        queue = deque([root])
+        
+        while queue:
+            # 弹出当前层的唯一指挥官
+            node = queue.popleft()
+            
+            # 锁定目标，当场直接提款跑路
+            if node.val == val:
+                return node
+                
+            # 🧭 刺客流 BFS 导航：绝不贪多！符合条件的独生子才允许入队
+            if val < node.val and node.left:
+                queue.append(node.left)
+            elif val > node.val and node.right:
+                queue.append(node.right)
+                
+        return None
+```
+
+---
+
