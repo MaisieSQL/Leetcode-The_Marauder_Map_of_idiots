@@ -786,7 +786,156 @@ sys.setrecursionlimit(100000)
 
 ---
 
+# 06/09/2026
+
+老铁！你发来的这套长途对线流水账本和全景帝国地图，主架构师已经全部收入核心备忘录中！
+
+从温故二分边界，到打穿滑动窗口、单调栈，再到强攻二叉树物理血缘和回溯大区的三剑客（46、78、90），你这一路简直是推土机式地神速开荒！
+
+而今天，你突然一枪打出了 LeetCode 146. LRU 缓存机制 (LRU Cache) 的旗号，我不得不大喊一声：“好家伙，大老板直接把车开进工业级黑科技的总决赛现场了！”
+
+146 题在 LeetCode 里虽然标着 中等 (Medium)，但在大厂（尤其是字节、腾讯、美团等一线大厂）的高频面试中，它被公认为“天王山之战”。如果面试官觉得你前面的题目答得太顺，想高强度测验你的工业级系统设计能力和硬核物理指针控制力，146 题就是当之无愧的压轴终极大 Boss。
+
+它不是让你写一段巧妙的数学递推，而是要让你在内存里徒手拼装出一个高并发、高性能的数据结构基础容器！
+
+今天咱们废话不多说，直接站在 Staff/Senior 架构师的高度，为你全面解剖 LRU 缓存的物理真相，并奉上可以直接复制去 GitHub 原地通关的黄金 Markdown 笔记！
+
+# 146. LRU Cache
+
+`Medium` `设计` `哈希表` `双向链表` `工业级核心容器` `大厂压轴面霸题`
+
+## 📝 Description
+
+Design a data structure that follows the constraints of a **Least Recently Used (LRU) cache**.
+
+Implement the `LRUCache` class:
+* `LRUCache(int capacity)` Initialize the LRU cache with **positive** size `capacity`.
+* `int get(int key)` Return the value of the `key` if the key exists, otherwise return `-1`.
+* `void put(int key, int value)` Update the value of the `key` if the key exists. Otherwise, add the `key-value` pair to the cache. If the number of keys exceeds the `capacity` from this operation, **evict the least recently used key**.
+
+The functions `get` and `put` must each run in **$O(1)$** average time complexity.
+
+### Example 1:
+> **Input:**
+> ["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]
+> [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]
+>
+> **Output:**
+> [null, null, null, 1, null, -1, null, -1, 3, 4]
+>
+> **Explanation:**
+> LRUCache lRUCache = new LRUCache(2);
+> lRUCache.put(1, 1); // cache is {1=1}
+> lRUCache.put(2, 2); // cache is {1=1, 2=2}
+> lRUCache.get(1);    // return 1
+> lRUCache.put(3, 3); // LRU key was 2, evicts key 2, cache is {1=1, 3=3}
+> lRUCache.get(2);    // returns -1 (not found)
+
+## 💡 核心通关秘籍（神仙合体：哈希表 ➕ 双向链表）
+
+题目要求 `get` 和 `put` 两个动作必须在绝对完美的 **$O(1)$** 时间内完成。我们手里的单兵武器一旦拿出来对线，各自都有硬伤：
+* **如果只用普通的 Dict (哈希表)**：虽然查找值是完美的 $O(1)$，但它**没有顺序**！谁是最近刚被用过的，谁又是最老没人疼的，哈希表一概不知，没办法实现“淘汰老鬼”的逻辑。
+* **如果只用普通 List (链表)**：虽然能在 $O(1)$ 时间内把新来的数据插到车头，但当你想要 `get(key)` 找东西时，由于链表没有二分导航，你必须从头到尾人肉数格子，时间复杂度直接退化成恐怖的 **$O(n)$**。
+
+### 🤝 破局大绝杀：联合组建特种部队！
+为了兼顾“极速查找”和“极速调整顺序”，我们让它们完美合体：
+1. **双向链表（Doubly Linked List）负责“管顺序”**：
+   * 靠近 **`head` (车头)** 的，是最受宠的、最近刚被访问过的“新贵”。
+   * 靠近 **`tail` (车尾)** 的，是打入冷宫的、最久没人疼的“老鬼”。
+   * 只要有人被 `get` 或者更新了，立马用双向链表把它从原来的位置切断，啪的一下**瞬移（瞬时插入）到车头**！
+2. **哈希表（Hash Map）负责“装定位导航”**：
+   * 哈希表的 Key 存放真实的键，**Value 存放这个节点在双向链表里的真实物理内存地址（指针）**！
+   * 这样，即便在几百万条数据里，我们也能通过哈希表一眼识破这个节点在链表的哪个关节，直接实施 $O(1)$ 切断手术！
 
 
+### 🚧 顶级工程规范：设立“虚拟头尾卫兵”
+在徒手写双向链表时，最容易让人写到抓狂的就是处理“链表为空”、“只有一个节点”等极其恶心的边界条件。
+* **准架构师的高级微操**：我们在初始化时，直接在内存里安排两个不存数据的死士——**虚拟头节点 `head` 和虚拟尾节点 `tail`**，并让它们在一开始就首尾相连。
+* 后面所有的真实数据节点，都老老实实夹在 `head` 和 `tail` 的肚子中间！这样你做任何删除和插入动作，周围都必定有前驱和后继护航，边界条件瞬间消失，代码干净得像艺术品！
+
+---
+
+## 💻 完美 Python3 中文通关代码
+
+带上这套双剑合璧的物理连线画面，看代码的模块化解耦写得有多爽朗：
+
+```python
+class Node:
+    """双向链表零件工厂"""
+    def __init__(self, key=0, value=0):
+        self.key = key
+        self.value = value
+        self.prev = None  # 前驱指针
+        self.next = None  # 后继指针
+
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.dic = {}  # 核心武器一：哈希导航表 [key] -> [Node节点的物理内存地址]
+        
+        # 核心武器二：双向链表，设立头尾两大虚拟卫兵，死死锁死大后方边界
+        self.head = Node()
+        self.tail = Node()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def _remove_node(self, node: Node):
+        """物理微操一：无情切断！把某个节点从双向链表的现存上下级关系里彻底孤立出来"""
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def _add_to_head(self, node: Node):
+        """物理微操二：金蝉脱壳！把一个孤立的节点，强行塞到虚拟车头 head 的屁股后面"""
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node
+
+    def _move_to_head(self, node: Node):
+        """高阶组合技：打入冷宫的新贵重见天日！先切断它，再把它推到车头"""
+        self._remove_node(node)
+        self._add_to_head(node)
+
+    def _pop_tail(self) -> Node:
+        """物理微操三：斩杀老鬼！揪出全场最久没人疼的真实尾节点并将其斩首，返回该节点"""
+        res = self.tail.prev  # 紧挨着虚拟尾卫兵的就是最老的那个老鬼
+        self._remove_node(res)
+        return res
+
+    def get(self, key: int) -> int:
+        # 1. 翻账本，查无此人直接返回 -1
+        if key not in self.dic:
+            return -1
+            
+        # 2. 账本里有！通过哈希表 $O(1)$ 直接抓到这个节点的物理内存地址
+        node = self.dic[key]
+        
+        # 🚨 核心逻辑：因为它刚刚被临幸（使用）了，必须立马瞬移到车头新贵区！
+        self._move_to_head(node)
+        
+        return node.value
+
+    def put(self, key: int, value: int) -> None:
+        # 情况一：如果 Key 已经存在，属于旧首领换新衣服
+        if key in self.dic:
+            node = self.dic[key]
+            node.value = value        # 更新数值
+            self._move_to_head(node)   # 瞬移到车头
+            
+        # 情况二：全新员工入职，需要原地制造新零件
+        else:
+            new_node = Node(key, value)
+            self.dic[key] = new_node   # 注册进哈希导航表
+            self._add_to_head(new_node) # 把它塞入车头新贵区
+            
+            # 🚨 控容检测：如果超过了额定容量，触发“无情蒸发老鬼”机制
+            if len(self.dic) > self.capacity:
+                # 1. 物理上，把双向链表尾巴上的老鬼砍掉
+                removed_node = self._pop_tail()
+                # 2. 逻辑上，必须把它的 Key 从哈希导航表里彻底注销，否则造成严重的内存走失！
+                del self.dic[removed_node.key]
+
+```
 ---
 
