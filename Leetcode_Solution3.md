@@ -470,3 +470,134 @@ def dfs(root):
 位置决定时机，时机决定信息量，信息量最终决定了它们的降维超能力！”
 ```
 
+---
+
+# 前序遍历，中序遍历，后序遍历
+
+# 🧱 2026 统一远征大模板：全局账本流
+
+> **架构师设计核心：** 为了不破坏 LeetCode 官方给的单参数接口，同时又能丝滑记账，我们统一在大函数内部【嵌套】一个 `dfs(node)` 小闭包工具，并随身携带一个 `res = []` 全局大账本。
+> 
+> 在这个模型中，大军的行军路线（左路、右路）是死死固定、雷打不动的。其最神妙之处在于：**只需将核心计算代码在 A、B、C 三个站台之间来回换座位，同一个模板就能瞬间秒杀前序、中序、后序三大主线任务！**
+
+---
+
+## 💻 Python3 完美通用骨架模板
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def travelTree(self, root: Optional[TreeNode]) -> List[int]:
+        # 🌟 全局大账本，独立于递归栈帧之外，用来装沿途洗劫到的物资
+        res = []  
+        
+        def dfs(node: Optional[TreeNode]):
+            # 🛡️ 【板块一：生死防线】 
+            # 踩空了，安全着陆，向上层弹栈物理返回
+            if not node:
+                return
+                
+            # 🎰 🌟 【位置 A】：前序代码位 (根 -> 左 -> 右)
+            # 行军时机：刚踏入当前节点，底下的左右子树连影儿都还没见到
+            # 适合：自上而下大权独揽，向低位强传指令与约束
+            
+            # 🧭 【板块三：纵深深入 ── 派兵打左路】
+            dfs(node.left)   
+            
+            # 🎰 🌟 【位置 B】：中序代码位 (左 -> 根 → 右)
+            # 行军时机：左子树已经全部荡平，但右子树还完全被迷雾笼罩
+            # 适合：在 BST 里开启黄金导航，吐出的数字天然呈严格升序
+            
+            # 🧭 【板块三：纵深深入 ── 派兵打右路】
+            dfs(node.right)  
+            
+            # 🎰 🌟 【位置 C】：后序代码位 (左 -> 右 -> 根)
+            # 行军时机：全场最无私。左右江山全盘荡平结算完，最后一刻才睁眼
+            # 适合：自下而上汇报汇总，手握左右子树全量战报做统筹综合决策
+
+        # 初始点火：把根节点作为先锋官投入战场
+        dfs(root)
+        
+        # 凯旋归来：上交最终战利品大账本
+        return res
+```
+
+咱们现在就直接拉出火炮，用刚才盘好的 “递归三大核心骨架模板”，去把 LeetCode 上最纯正、最经典的 3 道 Easy 级正统主线任务（144题、94题、145题）当场拿下！
+
+### 🎬 三大 Easy 题現場填空教学
+#### 🗼 1. LeetCode 144. 二叉树的前序遍历 (Preorder)
+
+核心时机：大哥前序是“老子说了算”，一进门先拿物资（位置 A），再派兵。
+
+完美代码：
+```python
+class Solution:
+    def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        res = []
+        
+        def dfs(node):
+            if not node: return # 【板块一】
+            
+            # 🎰 填空位置 A：一进门，先把当前根节点的值抄在账本上！
+            res.append(node.val) 
+            
+            dfs(node.left)      # 【板块三】
+            dfs(node.right)     # 【板块三】
+            
+        dfs(root)
+        return res
+```
+
+### 🗼 2. LeetCode 94. 二叉树的中序遍历 (Inorder)
+#### 核心时机：二哥中序是“沉得住气”，打完左路弹回来的时候，才拿物资（位置 B），接着打右路。
+
+完美代码：
+```python
+class Solution:
+    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        res = []
+        
+        def dfs(node):
+            if not node: return # 【板块一】
+            
+            dfs(node.left)      # 【板块三】
+            
+            # 🎰 填空位置 B：左边打完了，轮到结算当前根节点的值了！
+            res.append(node.val)
+            
+            dfs(node.right)     # 【板块三】
+            
+        dfs(root)
+        return res
+```
+
+### 🗼 3. LeetCode 145. 二叉树的后序遍历 (Postorder)
+#### 核心时机：三弟后序是“全场最无私”，必须等左路、右路全部打完汇报了，最后才拿老爹的物资（位置 C）。
+
+完美代码：
+```python
+class Solution:
+    def postorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        res = []
+        
+        def dfs(node):
+            if not node: return # 【板块一】
+            
+            dfs(node.left)      # 【板块三】
+            dfs(node.right)     # 【板块三】
+            
+            # 🎰 填空位置 C：左右江山全荡平了，最后才把老爹的值收进账本！
+            res.append(node.val)
+            
+        dfs(root)
+        return res
+```
+
+---
+
