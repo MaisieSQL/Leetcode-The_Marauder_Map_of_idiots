@@ -234,6 +234,45 @@ The number of nodes in the tree is n.
 Follow up: If the BST is modified often (i.e., we can do insert and delete operations) and you need to find the kth smallest frequently, how would you optimize?
 
 
+## 💻 Python3 完美代码实现
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        # 手动开辟一个物理栈，用来记录大军行军的沿途遗迹（模拟系统调用栈）
+        stack = []
+        
+        # 只要当前节点不为空（还能往下探），或者栈里还有存货（还能往回弹），大军就不能停
+        while root or stack:
+            
+            # 【步骤 1】一路向左狂飙，把沿途见到的老爹和左小弟全压进栈里
+            # 理由：根据中序遍历“左-根-右”铁律，左边的数最小，必须先被压榨到最深处
+            while root:
+                stack.append(root)
+                root = root.left  # 疯狂左滑探底
+                
+            # 【步骤 2】全场最左的尽头踩空了，说明此时栈顶躺着的就是当前的“全场最小值”
+            root = stack.pop()
+            
+            # 【步骤 3】核心雷达记账：访问到了“根”节点，k 计数器减 1
+            k -= 1
+            
+            # 【步骤 4】提款判定：如果计数器归零，说明这就是第 k 小的数，当场截断，提款退出！
+            # 后面那大半棵高位树枝，我们碰都不碰，省时省内存！
+            if k == 0:
+                return root.val
+                
+            # 【步骤 5】左边和根都洗劫完了，按照中序铁律，大军转战右子树
+            root = root.right
+```
+
 ---
 
 # 🗺️ DFS 深度优先搜索家族终极全景族谱
