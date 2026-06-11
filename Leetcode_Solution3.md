@@ -74,6 +74,64 @@ Constraints:
 The number of nodes in the tree is in the range [1, 104].
 -231 <= Node.val <= 231 - 1
 
+## 核心通关秘籍：全局边界紧箍咒
+
+伪架构师一看到这题，本能地觉得很简单：“只要写个局部递归，看左孩子比我小、右孩子比我大不就行了？” **只要这么写，当场掉进面试官挖的深坑！** ### 🚨 局部检测的致命漏洞
+来看下面这个极其高频的卡人反例树：
+```text
+            10
+         /      \
+      5          15
+    /             \
+   6                20
+```
+
+如果你只看局部父子关系：`6 < 15`（合法），`20 > 15`（合法），`5 < 10`（合法），`15 > 10`（合法）。局部检测会判定它是一棵合法的 BST。
+**但它根本不是！** 因为 `6` 跑到了根节点 `10` 的右子树里，右子树里的**所有节点**都必须严格大于 `10`。这个 `6` 越界了！
+
+### 🪓 战术绝杀：层层下发上下限约束区间
+为了不漏掉任何一个越界的“叛徒”，当我们顺着树枝往下走时，不能只看当前的爹，必须给底下的子树传递一个**生死的全局上下限区间 $(low, high)$**：
+
+1. **当你往左子树深入时**：右边界被死死卡住。上限变成当前节点的值（小弟们绝对不能超过我这个当爹的），下限继承上一层的旧下限。
+2. **当你往右子树深入时**：左边界被死死卡住。下限变成当前节点的值（小弟们必须比我这个当爹的大），上限继承上一层的旧上限。
+3. **刚进门时**：天高任鸟飞，初始化全场的上下限为负无穷到正无穷 `(float('-inf'), float('inf'))`。
+
+## 💻 3. Python3 完美代码实现
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        
+        def helper(node: Optional[TreeNode], low: float, high: float) -> bool:
+            # 1. 递归出口：踩空了，说明一路上没有撞见任何违规节点，安全通关
+            if not node:
+                return True
+                
+            # 2. 核心雷达检测：一旦当前节点的值跳出了全局“紧箍咒”区间，当场抓获！
+            # ⚠️ 注意：BST 要求严格大于或小于，所以带有等号 (<= 或 >=) 也是违规的
+            if node.val <= low or node.val >= high:
+                return False
+                
+            # 3. 纵向深入分布式作战（多路同步安检）：
+            # 左子树：下限不变，上限被死死锁定在当前 node.val (左孩子必须小于我)
+            # 右子树：上限不变，下限被死死锁定在当前 node.val (右孩子必须大于我)
+            left_valid = helper(node.left, low, node.val)
+            right_valid = helper(node.right, node.val, high)
+            
+            # 只有左边和右边同时合规，这棵子树才算真正的 BST
+            return left_valid and right_valid
+            
+        # 初始全局安检启动，天高任鸟飞，上下限设为正负无穷
+        return helper(root, float('-inf'), float('inf'))
+```
+---
 
 # 🧭 树形算法终极解耦：战略、战术与架构师选型铁律
 
