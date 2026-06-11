@@ -561,7 +561,7 @@ class Solution:
 
 核心时机：大哥前序是“老子说了算”，一进门先拿物资（位置 A），再派兵。
 
-完美代码：
+完美代码之递归流（敏捷PoC版）：
 ```python
 class Solution:
     def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
@@ -580,10 +580,33 @@ class Solution:
         return res
 ```
 
+完美代码之迭代流 (大厂生产级抗压版)：
+```python
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> list[int]:
+        if not root:
+            return []
+        
+        res = []
+        stack = [root]  # 显式手写用户栈
+        
+        while stack:
+            node = stack.pop()
+            res.append(node.val)  # 【根】
+            
+            # 核心细节：后进先出，所以先压右，再压左
+            if node.right:
+                stack.append(node.right)
+            if node.left:
+                stack.append(node.left)
+                
+        return res
+```
+
 ### 🗼 2. LeetCode 94. 二叉树的中序遍历 (Inorder)
 #### 核心时机：二哥中序是“沉得住气”，打完左路弹回来的时候，才拿物资（位置 B），接着打右路。
 
-完美代码：
+完美代码之递归流（敏捷PoC版）：
 ```python
 class Solution:
     def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
@@ -603,10 +626,34 @@ class Solution:
         return res
 ```
 
+完美代码之迭代流 (大厂生产级抗压版)：
+```python
+class Solution:
+    def inorderTraversal(self, root: TreeNode) -> list[int]:
+        res = []
+        stack = []
+        curr = root
+        
+        while curr or stack:
+            # 第一步：只要左边有路，一路死磕到底，全部压栈
+            while curr:
+                stack.append(curr)
+                curr = curr.left
+            
+            # 第二步：左边到头了，弹出最左下角的节点并访问
+            curr = stack.pop()
+            res.append(curr.val)  # 【根】
+            
+            # 第三步：转向右子树，重复“一路向左”的逻辑
+            curr = curr.right
+            
+        return res
+```
+
 ### 🗼 3. LeetCode 145. 二叉树的后序遍历 (Postorder)
 #### 核心时机：三弟后序是“全场最无私”，必须等左路、右路全部打完汇报了，最后才拿老爹的物资（位置 C）。
 
-完美代码：
+完美代码之递归流（敏捷PoC版）：
 ```python
 class Solution:
     def postorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
@@ -625,5 +672,27 @@ class Solution:
         return res
 ```
 
+完美代码之迭代流 (大厂生产级抗压版)：
+```python
+class Solution:
+    def postorderTraversal(self, root: TreeNode) -> list[int]:
+        if not root:
+            return []
+            
+        res = []
+        stack = [root]
+        
+        while stack:
+            node = stack.pop()
+            res.append(node.val)  # 收集顺序：根 ➔ 右 ➔ 左
+            
+            # 为了先弹出右，让左先入栈
+            if node.left:
+                stack.append(node.left)
+            if node.right:
+                stack.append(node.right)
+                
+        return res[::-1]  # 【无情翻转】直接化作：左 ➔ 右 ➔ 根
+```
 ---
 
