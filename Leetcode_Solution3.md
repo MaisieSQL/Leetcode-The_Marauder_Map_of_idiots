@@ -242,6 +242,7 @@ Follow up: If the BST is modified often (i.e., we can do insert and delete opera
 > 
 > 其肉体形态千变万化，但“一条路走到黑、不撞南墙不回头”的深度优先灵魂，永远是它们共有的姓氏！
 
+```text
 ## ⚔️ DFS 家族核心三大支脉全景图
                                       │
        ┌──────────────────────────────┼──────────────────────────────┐
@@ -251,7 +252,8 @@ Follow up: If the BST is modified often (i.e., we can do insert and delete opera
    ├── ① 前序遍历 (Preorder)        ├── ① 全排列流派 (Permute)       ├── ① 图的深拷贝 (Clone)
    ├── ② 中序遍历 (Inorder)         ├── ② 子集组合流派 (Subsets)     └── ② 拓扑排序 (Topology)
    └── ③ 后序遍历 (Postorder)        └── ③ 分割/剪枝流派 (Cut)
-   
+```
+
 # 🛡️ DFS 深度优先搜索家族三大支脉深度解剖
 
 > **核心大局观：** DFS 在树里表现为纵向探底遍历。无论形式如何变化，其万能代码骨架的核心逻辑都是利用“系统栈（递归）”或“手动栈（迭代）”实现不撞南墙不回头的深度拓荒。
