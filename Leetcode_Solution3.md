@@ -206,3 +206,28 @@ A: 执行灵魂：什么叫“函数递归”？（Recursion）
 不管你的函数是写在外面，还是嵌套在里面，只要代码执行到某一行时，自己又把手伸向了自己，这就叫递归！它解决的是“纵向深入、时空套娃”的计算问题。
 ---
 
+230. Kth Smallest Element in a BST
+Medium
+Topics
+conpanies icon
+Companies
+Hint
+Given the root of a binary search tree, and an integer k, return the kth smallest value (1-indexed) of all the values of the nodes in the tree.
+
+Example 1:
+Input: root = [3,1,4,null,2], k = 1
+Output: 1
+
+Example 2:
+Input: root = [5,3,6,2,4,null,null,1], k = 3
+Output: 3
+ 
+
+Constraints:
+
+The number of nodes in the tree is n.
+1 <= k <= n <= 104
+0 <= Node.val <= 104
+ 
+
+Follow up: If the BST is modified often (i.e., we can do insert and delete operations) and you need to find the kth smallest frequently, how would you optimize?
