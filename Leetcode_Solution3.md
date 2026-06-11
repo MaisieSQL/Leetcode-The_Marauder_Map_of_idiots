@@ -760,31 +760,89 @@ class Solution:
 
 ---
 
-236. Lowest Common Ancestor of a Binary Tree
+# LeetCode 236. 二叉树的最近公共祖先 (Lowest Common Ancestor of a Binary Tree) —— Medium
 
-Given a binary tree, find the lowest common ancestor (LCA) of two given nodes in the tree.
+## 📝 一、题目描述
 
-According to the definition of LCA on Wikipedia: “The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).”
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先（LCA）。
 
-Example 1:
-Input: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
-Output: 3
-Explanation: The LCA of nodes 5 and 1 is 3.
+**百度百科中最近公共祖先的定义为：** “对于有根树 T 的两个节点 p、q，最近公共祖先表示为一个节点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（一个节点也可以是它自己的祖先）。”
 
-Example 2:
-Input: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4
-Output: 5
-Explanation: The LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself according to the LCA definition.
+### 示例 1:
+```text
+        _______3______
+       /              \
+    ___5___          __1__
+   /       \        /     \
+   6       _2_      0      8
+          /   \
+          7    4
+```
 
-Example 3:
-Input: root = [1,2], p = 1, q = 2
-Output: 1
- 
+输入: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+输出: 3
+解释: 节点 5 和节点 1 的最近公共祖先是节点 3。
 
-Constraints:
+### 💡 提示:
+- 树中节点数目在范围 `[2, 10^5]` 内。
+- `-10^9 <= Node.val <= 10^9`
+- 所有 `Node.val` 互不相同。
+- `p` 和 `q` 均存在于给定的二叉树中且 `p != q`。
 
-The number of nodes in the tree is in the range [2, 105].
--109 <= Node.val <= 109
-All Node.val are unique.
-p != q
-p and q will exist in the tree.
+## 🔬 二、硬核黑客解析：纯正的“左右中”后序血统
+
+这道题在工业界（如多智能体依赖审计、风控黑产关联图谱交汇点追踪）出镜率极高。很多候选人靠死记硬背通关，但在计算机科学第一性原理中，**这道题的底层骨架百分之百就是“左右中”的后序遍历（Post-order Traversal）**！
+
+### 1. 为什么必须锁死“左右中”后序？
+后序遍历的核心战略是 **【自底向上（Bottom-up）的线索收集】**。
+- **【左】与【右】（探路收集）**：根节点必须做甩手掌柜，先派左子树、右子树深入到地下最底层去摸黑排查，看看两边到底能不能抓到目标节点 `p` 或 `q`。
+- **【中】（商业拍板）**：只有等左右子树打完仗、把各自收集到的线索汇报到根节点的桌面上时，根节点（中）才有资格根据汇总情报做出最终的裁决。
+
+### 2. 核心拍板逻辑的三个生死边界
+当递归从底层回溯到当前节点 `root`（中）时，我们盘点两路大军带回来的线索（`left` 和 `right`）：
+
+- **边界 ①：`left` 和 `right` 同时非空**
+  说明左子树抓到了其中一个，右子树抓到了另一个。`p` 和 `q` 分居在我的两侧！那我（`root`）就是把它们两个锁死的、深度最大的那个**最近公共祖先**。直接将我自己往上传！
+- **边界 ②：`left` 和 `right` 只有一个非空**
+  说明 `p` 和 `q` 并没有分居两侧，它们同属于某一边（或者目前只找到了一个）。那就谁有线索（非空）就把谁顶替上去继续传给上层。
+- **边界 ③：`left` 和 `right` 均为空**
+  说明这颗子树下面一无所获，既没有 `p` 也没有 `q`，无情返回 `None`。
+
+## 💻 三、大厂生产级通关代码（标准后序模板流）
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution:
+    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        
+        # 【Base Case 刹车片】：
+        # 如果当前节点已经撞墙（None），或者当前节点自己就是 p 或 q，
+        # 废话少说，立刻作为“关键线索”强行复活往上传！
+        if not root or root == p or root == q:
+            return root
+        
+        # ------------------ 标准后序模板（左右中）开始 ------------------
+        
+        # 1. 【左】：无情递归左子树，收集左路军带回来的线索
+        left = self.lowestCommonAncestor(root.left, p, q)
+        
+        # 2. 【右】：无情递归右子树，收集右路军带回来的线索
+        right = self.lowestCommonAncestor(root.right, p, q)
+        
+        # 3. 【中】（大局决策）：两路线索汇总，当前节点开始行使最终裁决
+        
+        # 情况 A：左边抓到人了（非空），右边也抓到人了（非空）
+        # 说明 p 和 q 分居在我的两侧，我（root）就是那个把它们死死锁在一起的最近公共祖先！
+        if left and right:
+            return root
+            
+        # 情况 B：如果两边没能同时亮绿灯，说明他们都在某一侧
+        # 谁非空（有线索）就把谁继续往上层回传；都为空自然返回 None
+        return left if left else right
+```
