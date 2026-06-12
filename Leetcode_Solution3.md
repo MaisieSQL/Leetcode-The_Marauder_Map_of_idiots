@@ -846,3 +846,113 @@ class Solution:
         # 谁非空（有线索）就把谁继续往上层回传；都为空自然返回 None
         return left if left else right
 ```
+
+---
+
+### 105. Construct Binary Tree from Preorder and Inorder Traversal
+
+Given two integer arrays preorder and inorder where preorder is the preorder traversal of a binary tree and inorder is the inorder traversal of the same tree, construct and return the binary tree.
+
+Example 1:
+
+Input: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+Output: [3,9,20,null,null,15,7]
+
+Example 2:
+
+Input: preorder = [-1], inorder = [-1]
+Output: [-1]
+ 
+Constraints:
+
+1 <= preorder.length <= 3000
+inorder.length == preorder.length
+-3000 <= preorder[i], inorder[i] <= 3000
+preorder and inorder consist of unique values.
+Each value of inorder also appears in preorder.
+preorder is guaranteed to be the preorder traversal of the tree.
+inorder is guaranteed to be the inorder traversal of the tree.
+
+# 🪓 LeetCode 105. 从前序与中序遍历序列构造二叉树 (Construct Binary Tree from Preorder and Inorder Traversal)
+
+## 📝 1. 题目描述 (Description)
+
+Given two integer arrays `preorder` and `inorder` where `preorder` is the preorder traversal of a binary tree and `inorder` is the inorder traversal of the same tree, construct and return *the binary tree*.
+
+### Example 1:
+* **Input**: `preorder = [3,9,20,15,7]`, `inorder = [9,3,15,20,7]`
+* **Output**: `[3,9,20,null,null,15,7]`
+
+### Example 2:
+* **Input**: `preorder = [-1]`, `inorder = [-1]`
+* **Output**: `[-1]`
+
+### Constraints:
+* $1 \le \text{preorder.length} \le 3000$
+* $\text{inorder.length} == \text{preorder.length}$
+* $-3000 \le \text{preorder}[i], \text{inorder}[i] \le 3000$
+* `preorder` and `inorder` consist of **unique** values.
+* Each value of `inorder` also appears in `preorder`.
+* `preorder` is **guaranteed** to be the preorder traversal of the tree.
+* `inorder` is **guaranteed** to be the inorder traversal of the tree.
+
+## 🧠 2. 核心破局解析 (Algorithm Analysis)
+
+### 🚨 避坑第一防线：它压根不是 BST！
+别被刷题的思维惯性给暗酸了！仔细观察中序遍历序列 `[9, 3, 15, 20, 7]`，数字一会儿大一会儿小，**根本不是升序排列**！这铁证如山地证明了：**它只是一棵普普通通的乱序普通二叉树，不是二叉搜索树（BST）**！
+
+### 🛠️ 为什么“中序切刀律”依然能玩出类似“二分查找”的快感？
+你感觉它像二分查找（Binary Search），这完全不是错觉，因为它的底层核心思想就是在玩**“高维空间下的二分区间分割”**！
+中序遍历（左 $\rightarrow$ 根 $\rightarrow$ 右）天生自带的超级特权不是“数字大小”，而是**【绝对的空间左右隔离】**：
+1. **前序（Preorder）抓猎头**：前序的第一个元素 `preorder[p_left]` 永远是当前战区最高指挥官（根节点 `root`）。
+2. **中序（Inorder）动切刀**：拿着大老板的值去中序里一查，抓到索引 `ri`。不管树长得多乱，**`ri` 左边的零件只能在物理上堆成左子树，右边的零件只能在物理上堆成右子树**！这个划分动作自始至终不需要比大小，纯粹是空间站位的物理特权！
+3. **原位指针控制（绝对捍卫 $O(1)$ 额外空间）**：为了追求极致的大厂高并发工程规范，我们绝不用任何高开销的数组切片（`nums[left:right]` 会在底层频繁复制内存，平白贡献 $O(N^2)$ 的时间代价），而是像二分查找一样，用 **四个边界指针**（`p_left`, `p_right`, `i_left`, `i_right`）在原内存区域原位死磕！
+
+## 💻 3. Python3 完美通关代码 (Solution)
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:
+        # 🛠️ 工业级预处理：把中序的值和下标做成哈希表，实现 O(1) 极速定位中序空间切割点
+        in_map = {val: i for i, val in enumerate(inorder)}
+        
+        def my_build(p_left, p_right, i_left, i_right):
+            # 🧱 【板块一：生死防线】
+            # 当指针发生错位交叉时，说明当前战区的乐高零件已经全部耗尽，安全返回 None
+            if p_left > p_right or i_left > i_right:
+                return None
+                
+            # 👑 【拿捏根节点】
+            # 前序遍历的第一个元素（当前战区的最左端边界），雷打不动百分之百是大老板！
+            root_val = preorder[p_left]
+            root = TreeNode(root_val)
+            
+            # 🧭 【空间切割定位】
+            # 去中序大盘里一翻，瞬间秒杀捞出大老板的空间左右隔离分界线（幕后真军师）
+            ri = in_map[root_val]
+            
+            # 📐 数学账本记账：算出大老板左手边一共有多少个孤儿零件
+            left_size = ri - i_left
+            
+            # 🧭 【板块三：纵深深入 ── 递归甩手掌柜多路同步穿针引线】
+            # 1. 连左路：前序扣掉大老板(p_left+1)，往后数 left_size 个。中序锁定切刀 ri 的左半边区间
+            root.left = my_build(p_left + 1, p_left + left_size, i_left, ri - 1)
+            
+            # 2. 连右路：前序跨过左路零件(p_left + left_size + 1)直达末尾。中序锁定切刀 ri 的右半边区间
+            root.right = my_build(p_left + left_size + 1, p_right, ri + 1, i_right)
+            
+            # 【尾声：大局结算】老爹连完线，把拼好的乐高金字塔原样交差上报
+            return root
+            
+        # 初始点火：全量大盘开拔，传入初始的左右边界下标
+        return my_build(0, len(preorder) - 1, 0, len(inorder) - 1)
+```
+
+---
