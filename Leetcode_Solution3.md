@@ -932,3 +932,95 @@ class Solution:
 ```
 
 ---
+
+## 接下来是两道完全类似的题，106 & 889
+
+# 🪓 LeetCode 106. 从中序与后序遍历序列构造二叉树 (Construct Binary Tree from Inorder and Postorder Traversal)
+
+## 📝 1. 题目描述 (Description)
+
+Given two integer arrays `inorder` and `postorder` where `inorder` is the inorder traversal of a binary tree and `postorder` is the postorder traversal of the same tree, construct and return *the binary tree*.
+
+### Example 1:
+- **Input**: `inorder = [9,3,15,20,7]`, `postorder = [9,15,7,20,3]`
+- **Output**: `[3,9,20,null,null,15,7]`
+
+### Example 2:
+- **Input**: `inorder = [-1]`, `postorder = [-1]`
+- **Output**: `[-1]`
+
+### Constraints:
+- $1 \le \text{inorder.length} \le 3000$
+- $\text{postorder.length} == \text{inorder.length}$
+- $-3000 \le \text{inorder}[i], \text{postorder}[i] \le 3000$
+- `inorder` and `postorder` consist of **unique** values.
+- Each value of `postorder` also appears in `inorder`.
+- `inorder` is **guaranteed** to be the inorder traversal of the tree.
+- `postorder` is **guaranteed** to be the postorder traversal of the tree.
+
+---
+
+## 🧠 2. 核心破局解析 (Algorithm Analysis)
+
+### 🎭 孪生兄弟的物理分工：后序抓尾，中序割肉！
+这道题的底层分治、高维空间二分分割逻辑和 105 题完全同宗同源，唯独在**“谁来扮演抓根节点的猎头”**上由于遍历规则发生了一丝物理位移：
+
+1. [cite_start]**后序（Postorder）抓尾巴根**：后序遍历的排队口诀雷打不动是 ── **【左子树的全部零件 $\rightarrow$ 右子树的全部零件 $\rightarrow$ 根节点（大老板）】** [cite: 57][cite_start]。因此，后序数组的最右端边界格子（`postorder[post_right]`），**百分之百、雷打不动就是当前整棵树的最高指挥官（Root）** [cite: 57]！
+2. [cite_start]**中序（Inorder）动空间切刀**：拿着这个大老板的值，去中序大盘里一查，抓到它的索引位置 `ri` [cite: 57][cite_start]。以 `ri` 为切割线，左边 `[in_left : ri-1]` 天然是左子树的零件区间，右边 `[ri+1 : in_right]` 天然是右子树的零件区间 [cite: 57][cite_start]。这个划分动作自始至终不需要比较数值大小，纯粹是空间站位的物理特权 [cite: 69]！
+3. **数学账本：原位四指针格子盘点**：为了捍卫极致的 $O(1)$ 额外空间性能（严防内存拷贝开销），我们同样使用 4 个整数当格子下标（`in_left, in_right, post_left, post_right`）在原内存区域原位死磕：
+   - 中序算出左子树一共有几颗零件：`left_size = ri - in_left`。
+   - 知道了数量，后序大盘开始位移割肉：后序的左子树从起点 `post_left` 开始，向后数 `left_size` 个格子，其右边界刚好落在 **`post_left + left_size - 1`** 处！
+
+---
+
+## 💻 3. Python3 完美通关代码 (Solution)
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def buildTree(self, inorder: List[int], postorder: List[int]) -> Optional[TreeNode]:
+        # 🛠️ 老实人 for 循环原位记账：建立中序的 “数值 -> 下标” 极速反向索引表
+        mymap = {}
+        for i, val in enumerate(inorder):
+            mymap[val] = i
+        
+        def helper(in_left, in_right, post_left, post_right):
+            # 🧱 【板块一：生死防线】
+            # 当左右围栏交叉发生负数越界时，物理上代表当前战区原料耗尽，安全撤退返回 None！
+            if in_left > in_right or post_left > post_right:
+                return None
+            
+            # 👑 【拿捏根节点】
+            # 核心变阵：后序遍历的最后一个元素，铁证如山百分之百是大老板！
+            root_val = postorder[post_right]
+            root = TreeNode(root_val)
+
+            # 🪓 【进行高维空间类似二分查找的切割】
+            ri = mymap[root_val]          # 捞出大老板在中序的空间隔离线（幕后真军师）
+            left_size = ri - in_left      # 算账：算出大老板左翼一共有多少个孤儿零件
+
+            # 🧭 【板块三：纵深深入 ── 递归甩手掌柜多路同步连乐高】
+            
+            # 1. 连左路：
+            # 中序：死锁切刀左半边 [in_left, ri - 1]
+            # 后序：从起点 post_left 开始往后数 left_size 个格子，终点是 post_left + left_size - 1
+            root.left = helper(in_left, ri - 1, post_left, post_left + left_size - 1)
+
+            # 2. 连右路：
+            # 中序：死锁切刀右半边 [ri + 1, in_right]
+            # 后序：跨过左路军（post_left + left_size），直到扣掉最尾巴大老板前的那一格（post_right - 1）
+            root.right = helper(ri + 1, in_right, post_left + left_size, post_right - 1)
+
+            # 【尾声：大局结算】老爹连完线，把整棵金字塔交差
+            return root
+        
+        # 初始点火：全量大盘开拔，传入中序和后序的初始左右边界下标
+        return helper(0, len(inorder) - 1, 0, len(postorder) - 1)
+```
+
