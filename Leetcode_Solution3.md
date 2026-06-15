@@ -1051,3 +1051,103 @@ $$\text{右子树起点} = (\text{左子树终点}) + 1 = (post\_left + left\_si
 所以右路的后序区间死锁为：`[post_left + left_size, post_right - 1]`。
 
 ---
+
+# ⚔️ LeetCode 889. 根据前序和后序遍历构造二叉树 (Construct Binary Tree from Preorder and Postorder Traversal)
+
+---
+
+## 🎯 1. 题目描述 (Problem Description)
+
+给定两个整数数组 `preorder` 和 `postorder` ，其中 `preorder` 是一个二叉树的**前序遍历**，`postorder` 是同一棵树的**后序遍历**，重构并返回该二叉树。
+
+如果存在多个答案，您可以返回其中 **任何一个** 。
+
+**示例 1:**
+* **输入:** `preorder = [1,2,4,5,3,6,7]`, `postorder = [4,5,2,6,7,3,1]`
+* **输出:** `[1,2,3,4,5,6,7]`
+
+**提示:**
+* `1 <= preorder.length <= 30`
+* `1 <= preorder[i] <= preorder.length`
+* `preorder` 中所有值都 **互不相同**
+* `postorder.length == preorder.length`
+
+---
+
+## 🔬 2. 核心数学与物理直觉解析 (Core Analytical Logic)
+
+这道题是二叉树逆向重构全家桶（105、106、889）中公认最奇妙的一道。因为**中序遍历（Inorder）彻底不在场了**，我们失去了一个能够天然“拦腰切断空间、物理隔离左右子树”的超级军师。
+
+### 🚨 物理因果链路分析
+
+1. **绝对两头的死锁（根节点）**：
+   * 前序遍历的排序规则是：**【 根节点 $\rightarrow$ 左子树全部零件 $\rightarrow$ 右子树全部零件 】**。因此，当前战区的最左端 `preorder[pre_left]` 必定是整棵树的最高指挥官（Root）。
+   * 后序遍历的排序规则是：**【 左子树全部零件 $\rightarrow$ 右子树全部零件 $\rightarrow$ 根节点 】**。因此，当前战区的最右端 `postorder[post_right]` 也是这个大老板。
+   * 两头一堵，我们拿着大老板的数值，根本无法像中序那样一眼看出底下密密麻麻的零件哪些属于左，哪些属于右。
+
+2. **破局的关键：抓住“下一级左老板”**：
+   * 既然最高指挥官无法帮我们切分边界，我们就把目光往前半步，去寻找**左子树的领队**。
+   * 观察前序大盘，既然第一个位置 `pre_left` 被整棵树的根节点占领了，那么紧跟在其后面的**下一个格子 `preorder[pre_left + 1]`，如果左子树存在，它就铁证如山是【左子树的根节点（左老板）】**！
+
+3. **去后序盘子里割肉算账**：
+   * 拿到了左老板的值（`left_root_val = preorder[pre_left + 1]`），我们去后序盘子里查出它排队的下标位置，记为 `post_idx`。
+   * 在后序数组中，整个左子树的零件都是从当前后序战区的起点 `post_left` 开始连续排队的，而左老板作为左子树的根，在后序【左 $\rightarrow$ 右 $\rightarrow$ 根】的规则下，**必然是左子树阵营里最后一个排完队落地的人**。
+   * 此时，左子树的零件数量（`left_size`）在物理上被强行锁死为：
+     $$left\_size = post\_idx - post\_left + 1$$
+
+4. **安全防线（为什么必须加叶子节点特判）**：
+   * 在 105 和 106 中，我们从来不需要判断 `pre_left == pre_right`。但在 889 题中，因为我们使用了 **`pre_left + 1`** 去偷看下一个小弟，一旦当前战区收缩到只有一个孤零零的叶子节点时（`pre_left == pre_right`），后面已经没有格子了，如果继续执行 `pre_left + 1` 就会直接发生 `Index Out of Range` 内存熔断！
+   * 因此必须拉起安全铁丝网：一旦 `pre_left == pre_right`，说明已经到底了，直接建立该节点返回交差！
+
+---
+
+## 💻 3. 完美通关代码 (Accepted Python Code)
+
+```python
+class Solution:
+    def constructFromPrePost(self, preorder: List[int], postorder: List[int]) -> Optional[TreeNode]:
+        # 🛠️ 极速记账：这次建立后序的【数值 -> 下标】反向表，用来秒杀左子树大老板的终点
+        post_map = {val: i for i, val in enumerate(postorder)}
+        
+        def helper(pre_left, pre_right, post_left, post_right):
+            # 🧱 生死防线
+            if pre_left > pre_right or post_left > post_right:
+                return None
+                
+            # 👑 拿捏最高指挥官
+            root_val = preorder[pre_left]
+            root = TreeNode(root_val)
+            
+            # 🚨 核心微操：如果当前战区只剩一个叶子节点，它自己就是大老板，底下没小弟了，直接交差！
+            # 如果不加这个判断，下面的 pre_left + 1 就会直接发生越界熔断！
+            if pre_left == pre_right:
+                return root
+                
+            # 🏹 抓住下一级左子树的大老板
+            left_root_val = preorder[pre_left + 1]
+            
+            # 🪓 去后序盘子里定位隔离线
+            post_idx = post_map[left_root_val]
+            
+            # 算账：算出左翼子树一共有多少颗零件（注意要加 1，因为是双闭区间数格子）
+            left_size = post_idx - post_left + 1
+            
+            # 🧭 纵深深入 ── 甩手掌柜原位割肉连乐高
+            # 1. 连左路：
+            # 前序：跳过整棵树根节点，往后数 left_size 个格子 -> [pre_left + 1, pre_left + left_size]
+            # 后序：从起点连续数到左老板落地的地方 -> [post_left, post_idx]
+            root.left = helper(pre_left + 1, pre_left + left_size, post_left, post_idx)
+            
+            # 2. 连右路：
+            # 前序：跨过左翼大军，直到最右端边界 -> [pre_left + left_size + 1, pre_right]
+            # 后序：跨过左翼大军（post_idx + 1），直到扣掉最尾巴大老板前的一格 -> [post_idx + 1, post_right - 1]
+            root.right = helper(pre_left + left_size + 1, pre_right, post_idx + 1, post_right - 1)
+            
+            return root
+            
+        return helper(0, len(preorder) - 1, 0, len(postorder) - 1)
+```
+
+---
+
+
