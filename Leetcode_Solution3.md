@@ -1170,6 +1170,146 @@ class Solution:
   👉 给二叉树 DFS 加上 visited 记账本，彻底终结 DFS 全家桶！
 ```
 
+---
+
+# ⚔️ LeetCode 98. 验证二叉搜索树 (Validate Binary Search Tree)
+
+---
+
+## 🎯 1. 题目描述 (Problem Description)
+
+给你一个二叉树的根节点 `root` ，判断其是否是一个有效的二叉搜索树。
+
+一个有效的二叉搜索树（BST）具有以下特征：
+1. 节点的左子树只包含 **严格小于** 当前节点键值的节点。
+2. 节点的右子树只包含 **严格大于** 当前节点键值的节点。
+3. 左右子树也必须分别是有效的二叉搜索树。
+
+**示例 1:**
+```text
+    2
+   / \
+  1   3
+```
+
+### 示例 2:
+```plaintext
+    5
+   / \
+  1   4
+     / \
+    3   6
+```
+
+输入: root = [5, 1, 4, null, null, 3, 6]
+
+输出: false
+
+解释: 根节点的值是 5 ，但是右子树中的节点 3 比 5 小，违反了 BST 全局规则。
+
+提示:树中节点数目范围在 [1, 10^4] 内$-2^{31} \le \text{Node.val} \le 2^{31} - 1$🔬 2. 局部父子检测的致命漏洞 (The Crucial Trap)绝大多数人一看到这题，本能地觉得很简单：“写个局部递归，看左孩子比我小，右孩子比我大不就行了？”只要你这么写，当场掉进无底深坑！来看下面这个经典的“隐藏叛徒”
+
+反例：
+```plaintext
+         10
+       /  \
+      5    15
+          /  \
+        [6]   20
+```
+
+局部安检：$6 < 15$（合规）、$20 > 15$（合规）、$5 < 10$（合规）、$15 > 10$（合规）。局部检测会给它全线亮绿灯。
+
+全局穿透：但这棵树根本不是 BST！因为节点 6 跑到了根节点 10 的右子树里，这意味着右子树里的所有子孙节点都必须严格大于 10。这个 6 越界了，他是右翼阵营里的“潜伏叛徒”！
+
+物理结论：只进行局部父子节点的对比是无效的，必须引入全局审计机制（动态上下限）。
+
+🛠️ 3. 解法一：前序遍历 ── 全局边界紧箍咒流（递归形态）
+🪓 核心物理直觉
+利用前序遍历（Preorder）自上而下、大权独揽的特权，在大军刚进入一个节点时（位置 A），强行向下投递一个动态锁死的安全边界 (low, high)：
+
+初始点火：全场没有任何约束，上下限为正负无穷 (float('-inf'), float('inf'))。
+
+派兵打左路：上限 high 被死死更新压缩为当前节点的值 node.val。
+
+派兵打右路：下限 low 被死死更新拉高为当前节点的值 node.val。
+
+```python
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        
+        def helper(node: Optional[TreeNode], low: float, high: float) -> bool:
+            if not node:
+                return True
+                
+            # 🌟【前序计算位】刚进门，立刻用当前的紧箍咒区间进行雷达扫射
+            if node.val <= low or node.val >= high:
+                return False
+                
+            # 【分布式深入】兵分两路，将更新后的物理边界强行砸给左、右子树
+            return helper(node.left, low, node.val) and helper(node.right, node.val, high)
+            
+        return helper(root, float('-inf'), float('inf'))
+```
+
+🛠️ 4. 解法二：中序遍历 ── 单调递增序列流（递归形态）🪓 核心物理直觉中序遍历（Inorder）按 【左 $\rightarrow$ 根 $\rightarrow$ 右】 的路线爬完一棵合法 BST，吐出来的数字序列百分之百是严格单调递增的升序数组。我们用全局变量 prev 记录前驱节点的值，每次回溯到根节点时验证是否满足递增。
+
+💻 Python3 代码实现
+
+```python
+class Solution:
+    def __init__(self):
+        self.prev = float('-inf')  # 随身携带一个记录仪
+
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        if not root:
+            return True
+            
+        # 🧭 1. 先去荡平左路
+        if not self.isValidBST(root.left):
+            return False
+            
+        # 🌟 2. 【中序计算位】回到根节点，验证单调性
+        if root.val <= self.prev:
+            return False
+        self.prev = root.val  # 刷新前驱值
+        
+        # 🧭 3. 挥师进军右路
+        return self.isValidBST(root.right)
+```
+
+🛠️ 5. 解法三：中序遍历 ── 手操物理栈即停提款流（迭代形态）
+🪓 核心物理直觉
+拒绝系统隐式套娃，手写 while 循环 and 显式用户栈。curr 指针化身钻头一路向左下探底将沿途节点压栈。一旦踩空弹栈，拿当前值与 prev 记录的旧值进行对比，不合规立刻熔断退出，高效省内存。
+
+💻 Python3 代码实现
+
+```python
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        stack = []
+        curr = root
+        prev = float('-inf')
+        
+        while curr or stack:
+            # 🚀 一路向左狂飙，纵深探底
+            while curr:
+                stack.append(curr)
+                curr = curr.left
+                
+            curr = stack.pop()
+            
+            # 🌟 【中序计算位】验证单调升序
+            if curr.val <= prev:
+                return False
+            prev = curr.val
+            
+            curr = curr.right
+            
+        return True
+```
+---
+
 ## 👑 1. BST ➔ 第二支脉（高级回溯）：从“有形”到“无形”的降维打击
 
 你做完 BST 的 98、230、450 题之后，你的大脑对**“函数向下套娃投递参数（前序）”**和**“踩空了原路弹回来恢复现场（后序）”**这两大物理动作的控盘感，就已经达到了巅峰。
