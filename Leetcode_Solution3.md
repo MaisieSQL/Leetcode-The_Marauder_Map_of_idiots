@@ -1310,6 +1310,61 @@ class Solution:
 ```
 ---
 
+# LeetCode 230. Kth Smallest Element in a BST (二叉搜索树中第 K 小的元素) ── 精简版
+
+- **输入**: root = `[5,3,6,2,4,null,null,1]`, k = `3`
+- **输出**: `3`
+
+---
+
+## 🛠️ 2. 核心解法：中序遍历 ── 显式物理栈即停计数流（迭代形态）
+
+### 🪓 核心物理直觉
+利用 **二叉搜索树 (BST) 的中序遍历（左 ➔ 根 ➔ 右）结果是严格单调递增升序序列** 的天然属性。
+
+拒绝系统隐式套娃，手写 `while` 循环和显式用户栈。指针 `curr` 一路向左下探底，将沿途节点压栈。一旦踩空弹栈，代表我们来到了“中序计算位”：
+- 每弹出一个节点，计数器 `k` 就减 1（代表找到了一个更小的数）。
+- 当 `k == 0` 时，说明当前节点就是全场第 $k$ 小的潜伏者，立刻熔断退出，高效省内存！
+
+### 💻 Python3 代码实现
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        stack = []
+        curr = root
+        
+        while curr or stack:
+            # 🚀 一路向左狂飙，纵深探底，把沿途节点全部压栈
+            while curr:
+                stack.append(curr)
+                curr = curr.left
+                
+            # 弹出当前最左（最小）的节点
+            curr = stack.pop()
+            
+            # 🌟【中序计算位】结算账本，数一数这是第几个被吐出来的节点
+            k -= 1
+            if k == 0:
+                return curr.val  # 抓到目标，即刻提款熔断
+                
+            # 转向右子树
+            curr = curr.right
+```
+
+## ⏱️ 3. 性能审计 (Complexity Matrix)
+
+| 解法流派 | 代码形态 | 工具外挂 | 时间复杂度 | 空间复杂度 | 优缺点 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **中序迭代流** | 🛠️ 迭代 | 手动 `stack` | $\mathcal{O}(H + k)$ | $\mathcal{O}(H)$ | **优**：极其精准！访问到第 $k$ 个节点立刻熔断，后面哪怕有1万个节点也绝不多看一眼，且手动栈绝对免疫系统爆栈。<br>**缺**：需要手写双层嵌套循环，微操要求高。 |
+
+---
 ## 👑 1. BST ➔ 第二支脉（高级回溯）：从“有形”到“无形”的降维打击
 
 你做完 BST 的 98、230、450 题之后，你的大脑对**“函数向下套娃投递参数（前序）”**和**“踩空了原路弹回来恢复现场（后序）”**这两大物理动作的控盘感，就已经达到了巅峰。
