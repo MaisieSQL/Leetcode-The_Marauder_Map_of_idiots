@@ -245,3 +245,82 @@ slow += 1                # 2. 填完货顺手向前走一步
 
 ---
 
+# 🛡️ LeetCode 19. Remove Nth Node From End of List (删除链表的倒数第 N 个结点)
+
+## 📝 1. 题目描述 (Description)
+
+给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
+
+- **⚠️ 核心约束**：你必须在 $\mathcal{O}(N)$ 时间复杂度内搞定。你能尝试使用 **一趟扫描** 实现吗？
+
+### 示例 1:
+
+
+> **输入**: head = [1, 2, 3, 4, 5], n = 2
+> **输出**: [1, 2, 3, 5]
+> **解释**: 倒数第 2 个节点是 4，把它切断抹除后，3 直接连到 5。
+
+### 示例 2:
+> **输入**: head = [1], n = 1
+> **输出**: []
+
+### 示例 3:
+> **输入**: head = [1, 2], n = 1
+> **输出**: [1]
+
+---
+
+## 🪓 2. 核心算法术语 ── 链表双指针（定长快慢指针锁距流）
+
+很多同学做这道题时，本能地想先人肉扫描一遍链表算总长度 $L$，然后再走一遍从前往后数第 $L - n + 1$ 个去删。
+- 🚨 **痛点**：这需要足足跑两趟扫描，代码写起来极其冗长且不优雅。
+- 🤝 **特种兵降维破局**：我们直接利用快慢指针的**“恒定身位控制”**。不需要知道总长，让两个指针保持固定间距 $n$，一趟扫描就能精准合围！
+
+### 🏃‍♂️ 物理行军逻辑三步走：
+1. **虚拟头护体 (Dummy Node)**：只要涉及删除链表节点，**无脑先开辟一个 `dummy` 节点指向 `head`**！因为如果题目要求删除的是正数第一个节点（即原车头 `head`），有 `dummy` 在大后方当锚点，你的代码绝对不会爆 `NoneType` 跪掉。
+2. **前哨突击队放飞 (`fast`)**：初始化 `fast` 和 `slow` 全都站在 `dummy` 起跑线上。先让 `fast` 一个人盲目往前狂奔 **`n + 1`** 步。此时，`fast` 和 `slow` 之间拉开了一条长为 `n + 1` 个格子的恒定生死时空差。
+3. **后卫协同合围 (`slow`)**：接着，让 `fast` 和 `slow` 改用**同等速度**（每次各走 1 步）一起向右齐头并进。由于它们的间距永远是 `n + 1`，当老大哥 `fast` 终于踩空撞到链表最尾端的 `None` 时，后卫 `slow` 刚好会**极其精准地卡在倒数第 `n` 个节点的前驱（也就是它的亲爹）位置**！
+4. **定点物理手术**：`slow` 抬起手术刀，直接越过倒数第 `n` 个节点，去连接孙子节点：
+   `slow.next = slow.next.next` 
+   瞬间完成无伤斩杀！
+
+---
+
+## 💻 3. Python3 完美通关代码
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         # 工业级标准链表节点定义
+#         self.val = val
+#         self.next = next
+
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        # 1. 迎面先祭出虚拟头 dummy，强行当成原 head 的亲爹
+        dummy = ListNode(0, head)
+        
+        # 2. 初始化：快慢双特种兵全部在 dummy 起点集结
+        fast = dummy
+        slow = dummy
+        
+        # 3. 前哨 fast 先一个人向前狂飙 n + 1 步，强行拉开时空控距
+        for _ in range(n + 1):
+            fast = fast.next
+            
+        # 4. 同步狂飙：快慢指针同速向前平推，直到 fast 踩空触底撞墙（None）
+        while fast is not None:
+            fast = fast.next
+            slow = slow.next
+            
+        # 5. 此时 slow 刚好精准停留在倒数第 n 个节点的“前驱老爹”位置！
+        # 手术刀切断：老爹直接拉住孙子的手，倒数第 n 个节点在物理内存中彻底被孤立清除
+        slow.next = slow.next.next
+        
+        # 6. 结算大账本：必须返回 dummy.next，因为原 head 随时可能已经被剁掉了
+        return dummy.next
+```
+
+---
+
