@@ -1310,7 +1310,22 @@ class Solution:
 ```
 ---
 
-# LeetCode 230. Kth Smallest Element in a BST (二叉搜索树中第 K 小的元素) ── 精简版
+# LeetCode 230. Kth Smallest Element in a BST (二叉搜索树中第 K 小的元素) ── 精简一刀流
+
+## 📝 1. 题目描述 (Description)
+
+Given the `root` of a binary search tree (BST), and an integer `k`, return *the* `k`th *smallest value (**1-indexed**) of all the values of the nodes in the tree*.
+
+### 示例:
+```plaintext
+         5
+        / \
+       3   6
+      / \
+     2   4
+    /
+   1
+```
 
 - **输入**: root = `[5,3,6,2,4,null,null,1]`, k = `3`
 - **输出**: `3`
