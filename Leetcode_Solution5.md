@@ -432,8 +432,8 @@ window['d'] = 1
 
 ```text
 e [ i  d ] b  a  o  o  o
-    └──────┘
-      window
+  └──────┘
+   window
 ```
 安检对账：window 依然不等于 need！继续向右平移。
 
