@@ -162,6 +162,48 @@ class Solution:
 ```python
 if nums[fast] != nums[slow - 2]:
 ```
-------
+
+只有当新货和 slow - 2（老老坑）不相等时，才说明这个数字在安全区里最多只出现了 1 次（或者是个全新的数），我们才允许它上车填坑！
+
+2. 为什么不能写成 nums[fast] != nums[fast - 2]？
+很多同学手抖容易写成 fast - 2，这是最致命的“脏数据越界陷阱”！
+
+因为 fast 质检员是在前面乱序、充满重复项的原数组里跑的。
+假设原数组长这样：[1, 1, 1, 1, 1, 2]
+
+当 fast 走到第 4 个 1 的时候，nums[fast] = 1，而 nums[fast - 2] 也是 1。它们相等，代码不让它进坑，看起来挺对。
+
+但是！ 当 fast 终于开荒到边界，走到了数字 2 的时候：
+
+nums[fast] 是 2。
+
+此时 fast - 2 那个位置，装的依然是原数组里的垃圾重复项 1！
+
+计算机一比对：2 != 1，合规！让 2 入坑。
+
+下一步，fast 往后走。如果后面还有另一个 2 呢？由于你每次都在跟前面乱跑的 fast - 2 脏数据比，你根本无法精准控制已经在安全区（slow区）里落户的那个数字到底满没满 2 次！整个控容大盘会瞬间全线崩溃。
+
+🎯 3. 终极飞升：万能通关 K 模板
+顺着这个直觉，如果大厂面试官故意刁难你，把题目魔改成：“原地删除重复项，让每个元素最多出现 K 次”。
+
+你连脑细胞都不用多废一个，直接把代码里的 2 改成 K，秒杀全场：
+
+```Python
+class Solution:
+    def removeDuplicates(self, nums: List[int], k: int = 2) -> int:
+        if len(nums) <= k: 
+            return len(nums)
+        
+        slow = k
+        for fast in range(k, len(nums)):
+            # 🌟 黄金钢铁定律：永远只跟安全大后方的 slow - k 做对比！
+            if nums[fast] != nums[slow - k]:
+                nums[slow] = nums[fast]
+                slow += 1
+        return slow
+这就是为什么非要 slow - 2 的物理真相 ── 它是用安全区大后方的铁律门槛，去精准过滤前面源源不断灌过来的流数据！
+```
+
+---
 
 
