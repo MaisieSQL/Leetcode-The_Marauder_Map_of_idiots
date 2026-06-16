@@ -398,13 +398,9 @@ slow.next.next 是 4 的下一个，也就是 5。
 
 ## 2. 核心大局观：两个 Counter 的生死博弈
 
-
-
 我们手上有两个账本：
 1. **`need` 账本（目标不动产）**：记录 `s1` 到底需要哪些字母，每个要多少个。这个账本初始化后就**雷打不动**。
 2. **`window` 账本（动态流动沙盘）**：记录当前在 `s2` 的滑动窗口（大小固定为 `len(s1)`）里，抓到了哪些字母，每个有几个。这个账本随着窗口向右滑动，**每秒钟都在发生剧变**。
-
----
 
 ## 3. 图形化推演：Counter 的加减微操
 我们直接拿这个例子对线：`s1 = "ab"`, `s2 = "eidbaooo"`
@@ -413,8 +409,6 @@ slow.next.next 是 4 的下一个，也就是 5。
 ### 📊 初始状态：建立 `need` 账本
 `s1 = "ab"`，所以我们的目标账本是：
 `need = {'a': 1, 'b': 1}`
-
----
 
 ### 🎬 第一步：窗口刚成型（卡在 s2 的前两个字母 "ei"）
 此时窗口区间是 `s2[0:2]`，也就是 `"ei"`。
@@ -425,6 +419,96 @@ slow.next.next 是 4 的下一个，也就是 5。
   [ e  i ] d  b  a  o  o  o
   └──────┘
    window
+```
+安检对账：window 不等于 need！不匹配，窗口准备整体向右平移。
+
+### 🎬 窗口向右滑一格（进一个，出一个）
+窗口要从 "ei" 变成 "id"
+
+🚨 核心微操：Counter 的加减法在这个瞬间发生！
+- 老货出窗（踢人减 1）：左边的 e 被甩出窗口了。我们在 window 账本里把 e 的计数减 1。
+window['e'] 变成 0（或者直接注销）。
+
+- 新货进窗（新人加 1）：右边的 d 被吸进窗口了。我们在 window 账本里把 d 的计数加 1。
+window['d'] = 1
+
+此时动态账本变成：window = {'i': 1, 'd': 1}
+
+```text
+e [ i  d ] b  a  o  o  o
+    └──────┘
+      window
+```
+安检对账：window 依然不等于 need！继续向右平移。
+
+### 🎬 第三步：继续平移（变成 "db"）
+- 出窗：i 出去 ➔ window 减去 i。
+
+- 进窗：b 进来 ➔ window 加上 b。
+
+此时动态账本变成：window = {'d': 1, 'b': 1}
+
+```text
+e  i [ d  b ] a  o  o  o
+     └──────┘
+      window
+```
+安检对账：不等于 need，继续走。
+
+### 🎬 第四步：绝杀时刻！窗口来到 "ba"
+- 出窗：d 出去 ➔ window 减去 d。
+
+- 进窗：a 进来 ➔ window 加上 a。
+
+此时动态账本变成：window = {'b': 1, 'a': 1}
+
+```text
+e  i  d [ b  a ] o  o  o
+        └──────┘
+         window
+```
+
+### 终极大对账：
+
+- window 账本里有 1个 a，1个 b。
+
+- need 账本里有 1个 a，1个 b。
+
+window == need 触发！ 铁证如山，说明 "ba" 就是 "ab" 的完美排列，直接一枪封喉，返回 True！
+
+```python
+from collections import Counter
+
+class Solution:
+    def checkInclusion(self, s1: str, s2: str) -> bool:
+        n1, n2 = len(s1), len(s2)
+        if n1 > n2: return False
+        
+        # 1. 建立雷打不动的目标不动产账本
+        need = Counter(s1)
+        # 2. 建立第一个初始窗口的流动沙盘
+        window = Counter(s2[:n1])
+        
+        # 3. 迎面先对账一次，万一前几个字母刚好就匹配上了呢
+        if window == need: return True
+        
+        # 4. 质检员带着固定长度的窗口向右狂飙
+        for i in range(n1, n2):
+            # 新货进窗：右边界字符，账本里加 1
+            window[s2[i]] += 1
+            
+            # 老货出窗：左边界字符（i - n1），账本里减 1
+            window[s2[i - n1]] -= 1
+            
+            # 优化细节：如果计数变成 0，直接把这个 key 删掉，防止影响后面的字典相等对比
+            if window[s2[i - n1]] == 0:
+                del window[s2[i - n1]]
+                
+            # 5. 每滑一格，高精度对账一次
+            if window == need:
+                return True
+                
+        return False
 ```
 
 ---
