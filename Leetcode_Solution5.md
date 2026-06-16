@@ -137,8 +137,6 @@ class Solution:
 > `nums[0]` 到 `nums[slow - 1]` 这一段区间，是我们在内存里**已经整顿完毕、百分之百绝对合规（每个数最多只出现了 2 次）的“安全江山”**。
 > 此时的 `slow` 格子，代表**“下一个即将要填入新货的空白坑位”**。
 
-[Image of two pointers slow and fast on a sorted array allowing up to two duplicate elements by checking two positions back]
-
 
 ## 1. 为什么非要“回头看两步”到 `slow - 2`？
 
