@@ -1380,6 +1380,111 @@ class Solution:
 | **中序迭代流** | 🛠️ 迭代 | 手动 `stack` | $\mathcal{O}(H + k)$ | $\mathcal{O}(H)$ | **优**：极其精准！访问到第 $k$ 个节点立刻熔断，后面哪怕有1万个节点也绝不多看一眼，且手动栈绝对免疫系统爆栈。<br>**缺**：需要手写双层嵌套循环，微操要求高。 |
 
 ---
+
+# LeetCode 450. Delete Node in a BST (删除二叉搜索树中的节点)
+
+## 📝 1. 题目描述 (Description)
+
+Given a root node reference of a BST and a key, delete the node with the given key in the BST. Return *the **root node reference** (possibly updated) of the BST*.
+
+Basically, the deletion can be divided into two stages:
+1. Search for a node to remove.
+2. If the node is found, delete the node.
+
+### 示例 1:
+
+- **输入**: root = `[5,3,6,2,4,null,7]`, key = `3`
+- **输出**: `[5,4,6,2,null,null,7]` (注：`[5,2,6,null,4,null,7]` 也是合法答案)
+
+### 提示:
+- 节点数的范围在 `[0, 10^4]` 内。
+- $-10^5 \le \text{Node.val} \le 10^5$
+- 树中所有节点的值都是 **唯一** 的。
+- `key` 是一个整数。
+
+---
+
+## 🔬 2. 核心物理直觉与“手术刀”三大场景 (The Crucial Scenarios)
+
+删除 BST 节点之所以是二叉树面试的巅峰之作，是因为它不是简单的“抹去指针”，而是要做一场保持 BST 严格单调性的**“器官移植手术”**。
+
+大军进场，首先利用 BST 的二分属性（小了往左走，大了往右走）定位到目标节点。一旦迎面撞上目标节点，我们必须根据其局部物理结构，进行精准的 **3 种手术切除方案**：
+
+### 场景 A：孤家寡人（叶子节点）
+- **物理状态**：目标节点左右孩子都是 `None`。
+- **手术方案**：毫无牵挂，直接斩断，无痛熔断返回 `None` 给它的父亲。
+
+### 场景 B：独苗继承（单侧有子树）
+- **物理状态**：目标节点只有左孩子，或者只有右孩子。
+- **手术方案**：直接把它的独苗（左/右子树）“打包过继”给它的父亲，目标节点直接释放。
+
+### 场景 C：双翼俱全（左右子树都有）── 终极手术 🌟
+- **物理状态**：目标节点左、右子树都有大量子孙。
+- **手术方案**：不能直接删除它，否则整棵树会断裂。我们必须在江山中找一个**“替罪羊”**来顶替它的位置，然后抹去那个替罪羊。
+  - **谁最适合当替罪羊？** 要么是**左子树里的最大值**（前驱），要么是**右子树里的最小值**（后继）。
+  - **标准物理连连看**：我们一路向右狂飙找到**右子树里的最左下角节点**（即右子树的最小值 `successor`），把它的值强行复制覆盖到当前要删除的节点上。接着，问题就蜕变成了：**去右子树里把那个真正的 `successor` 节点干掉**！
+
+---
+
+## 🛠 `key` 寻找位与递归宏观视角
+
+很多同学在写这道题时被“怎么把儿子接回父亲”搞晕。记住一个高维递归心法：
+> `root.left = self.deleteNode(root.left, key)` 
+> 含义是：**“我去左子树里把任务完成了，左子树会把修改后（或修剪后）的新根节点重新回传给我，我再重新认作左儿子。”** > 这样父亲完全不用管底层怎么做，只管收网连线！
+
+---
+
+## 💻 Python3 代码实现
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    def deleteNode(self, root: Optional[TreeNode], key: int) -> Optional[TreeNode]:
+        if not root:
+            return None
+            
+        # 🧭 阶段 1：利用 BST 属性，高能雷达定位目标
+        if key < root.val:
+            # 目标比我小，大军向左深入，并重新连线左儿子
+            root.left = self.deleteNode(root.left, key)
+        elif key > root.val:
+            # 目标比我大，大军向右深入，并重新连线右儿子
+            root.right = self.deleteNode(root.right, key)
+            
+        else:
+            # 🌟 阶段 2：迎面撞上目标节点！开始实施手术刀操作
+            
+            # 【场景 A & B 一网打尽】
+            # 如果左子树为空，直接把右子树打包回传（如果是叶子节点，右子树也是 None，同样合规）
+            if not root.left:
+                return root.right
+            # 如果右子树为空，直接把左子树打包回传
+            if not root.right:
+                return root.left
+                
+            # 【场景 C：左右双翼俱全，终极手术开始】
+            # 1. 寻找右子树的最小值（后继节点）：从右子树根节点出发，一路向左死磕到底
+            successor = root.right
+            while successor.left:
+                successor = successor.left
+                
+            # 2. 灵魂借尸还魂：把后继节点的值复制给当前节点
+            root.val = successor.val
+            
+            # 3. 斩草除根：现在当前节点活过来了，但右子树里多了一个复刻版的 successor
+            # 我们的任务变成：去右子树里把值为 successor.val 的节点物理抹除，并重新连线右儿子
+            root.right = self.deleteNode(root.right, successor.val)
+            
+        return root
+```
+
+---
 ## 👑 1. BST ➔ 第二支脉（高级回溯）：从“有形”到“无形”的降维打击
 
 你做完 BST 的 98、230、450 题之后，你的大脑对**“函数向下套娃投递参数（前序）”**和**“踩空了原路弹回来恢复现场（后序）”**这两大物理动作的控盘感，就已经达到了巅峰。
