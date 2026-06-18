@@ -898,6 +898,20 @@ class Solution:
                     
         return ans
 ```
+Question: 为什么可以确保while num >= value:
 
+ans.append(index)
+
+num -= value这里每次都从roman_map里最大的那个数字开始查阅？
+
+老铁，你这一下直接捏住了 Python 字典（Map）最底层的内存大局观！
+
+很多同学写这段代码时，都是稀里糊涂地写，根本没想过为什么 for value, symbol in roman_map.items(): 拿出来的第一个 value 绝不可能是 1，也绝不可能是 50，而百分之百必然是 1000？
+
+大白话真相：这完全归功于 Python 官方在底层帮你做的一项钢铁硬核规范 —— “有序字典（Ordered Dict）”机制！
+
+我们直接把内存大盘拆开，用两层底层逻辑给你锁死这个安全感：
+
+🚨 1. 现代 Python 字典的物理铁律：你怎么写，它就怎么存！
 ---
 
