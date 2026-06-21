@@ -77,3 +77,100 @@ class Solution:
 
 ---
 
+# 🛡️ LeetCode 54. Spiral Matrix (螺旋矩阵)
+
+## 📝 1. 题目描述 (Description)
+
+给你一个 `m × n` 的矩阵 `matrix` ，请按照 **顺时针螺旋顺序** ，返回矩阵中的所有元素。
+
+### 示例 1:
+
+
+> **输入**: matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+> **输出**: [1, 2, 3, 6, 9, 8, 7, 4, 5]
+
+---
+
+## 🪓 2. 核心算法解析 ── 四面大铁墙边界动态向内合围流
+
+这道题的几何外壳是一条顺时针不断“转弯、向内盘旋”的贪吃蛇。
+
+最优雅的工业级解法是 **【四墙合围法】**。我们不需要算步数，也不需要用方向数组，而是直接在矩阵的四个最外缘筑起四面大铁墙：
+* **`top = 0`**（顶墙）
+* **`bottom = len(matrix) - 1`**（底墙）
+* **`left = 0`**（左墙）
+* **`right = len(matrix[0]) - 1`**（右墙）
+
+### 🏃‍♂️ 贪吃蛇四路循环大扫荡：
+
+贪吃蛇按照 **“向右 ➔ 向下 ➔ 向左 ➔ 向上”** 的钢铁纪律路线循环行军。每扫完一行或一列（代表这面墙的数据彻底报废），对应的铁墙就立刻向内收缩一级，**并立刻进行安全审计（熔断检查）**：
+
+1. **➡️ 1. 向右冲锋（扫顶行）**：
+   从当前的 `left` 一路扫到 `right`。扫完后，顶层宣告作废，顶墙向下压一级（`top += 1`）。
+   - **🚨 核心安检**：如果发现 `top > bottom`，说明上下大军已经撞头，战场清洗完毕，直接 `break`！
+2. **⬇️ 2. 向下冲锋（扫右列）**：
+   从当前的 `top` 一路扫到 `bottom`。扫完后，右侧列宣告作废，右墙向左缩一级（`right -= 1`）。
+   - **🚨 核心安检**：如果发现 `left > right`，说明左右大军撞头，直接 `break`！
+3. **⬅️ 3. 向左冲锋（扫底行）**：
+   从当前的 `right` **倒序**一路扫回 `left`（`range(right, left - 1, -1)`）。扫完后，底层作废，底墙向上抬一级（`bottom -= 1`）。
+   - **🚨 核心安检**：如果 `top > bottom`，立马熔断。
+4. **⬆️ 4. 向上冲锋（扫左列）**：
+   从当前的 `bottom` **倒序**一路扫回 `top`（`range(bottom, top - 1, -1)`）。扫完后，左侧列作废，左墙向右推一级（`left += 1`）。
+   - **🚨 核心安检**：如果 `left > right`，立马熔断。
+
+> 💡 **矩阵走水口诀**：**“每扫完一面墙，高墙立刻往内缩；缩完秒做安全检，撞墙瞬间就收工！”**
+
+---
+
+## 💻 3. Python3 完美通关代码
+
+```python
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        # 1. 进来先做边界防御
+        if not matrix or not matrix[0]:
+            return []
+            
+        ans = []
+        # 2. 顶格摆开四面大铁墙边界
+        top = 0
+        bottom = len(matrix) - 1
+        left = 0
+        right = len(matrix[0]) - 1
+        
+        # 3. 开启四路循环大扫荡
+        while True:
+            # ➡️ A. 向右冲锋扫顶行（从左到右）
+            for col in range(left, right + 1):
+                ans.append(matrix[top][col])
+            top += 1  # 顶墙无情下压一级
+            if top > bottom:  # 🚨 安全审计：一旦越界，当场熔断
+                break
+                
+            # ⬇️ B. 向下冲锋扫右列（从上到下）
+            for row in range(top, bottom + 1):
+                ans.append(matrix[row][right])
+            right -= 1  # 右墙无情左移一级
+            if left > right:  # 🚨 安全审计：一旦越界，当场熔断
+                break
+                
+            # ⬅️ C. 向左冲锋扫底行（倒序！从右到左）
+            for col in range(right, left - 1, -1):
+                ans.append(matrix[bottom][col])
+            bottom -= 1  # 底墙无情上抬一级
+            if top > bottom:  # 🚨 安全审计：一旦越界，当场熔断
+                break
+                
+            # ⬆️ D. 向上冲锋扫左列（倒序！从下到上）
+            for row in range(bottom, top - 1, -1):
+                ans.append(matrix[row][left])
+            left += 1  # 左墙无情右移一级
+            if left > right:  # 🚨 安全审计：一旦越界，当场熔断
+                break
+                
+        # 4. 交出全场螺旋大扫荡战报
+        return ans
+```
+
+---
+
