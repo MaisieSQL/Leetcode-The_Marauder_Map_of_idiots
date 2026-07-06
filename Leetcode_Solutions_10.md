@@ -13,10 +13,6 @@
 > **输入**: intervals = [[7,10],[2,4]]
 > **输出**: true
 
-### 提示:
-* $0 \le \text{intervals.length} \le 10^4$
-* $\text{intervals[i].length} == 2$
-* $0 \le \text{start_i} < \text{end_i} \le 10^6$
 
 ## 🏛️ 二、 为什么用【扫描线核心/排序边界】这个算法？
 
