@@ -70,10 +70,6 @@ class Solution:
 > **输入**: intervals = [[7,10],[2,4]]
 > **输出**: 1
 
-### 提示:
-* $1 \le \text{intervals.length} \le 10^4$
-* $0 \le \text{start_i} < \text{end_i} \le 10^6$
-
 ---
 
 ## 🏛 McKay 二、 为什么用【小顶堆动态抽屉/血脉重组进化】这个算法？
