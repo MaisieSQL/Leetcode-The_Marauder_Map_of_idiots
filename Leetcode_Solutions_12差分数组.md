@@ -150,3 +150,57 @@ class Solution:
 
 ---
 
+# 📂 LeetCode 1094. 拼车 (Car Pooling) ── 区间边界微调实战
+
+## 📖 1. 题目描述
+车上最初是空的，总共有 `capacity` 个座位。
+给你一个数组 `trips`，其中 `trips[i] = [num_passengers, from, to]`。
+这表示第 `i` 趟行程有 `num_passengers` 个人从 `from` 站上车，在 `to` 站下车。
+
+请问：这辆车能不能一路上把所有人顺利接送完？（即：在任何时刻车上的人数都不能超过 `capacity`）。
+
+### 示例：
+*   **输入：** `trips = [[2, 1, 5], [3, 3, 7]]`, `capacity = 4`
+*   **om 输出：** `false` （因为在第 3 站到第 5 站之间，车上会有 2+3=5 个人，超过了 4 个座位）
+
+---
+
+## 💡 2. 破局关键：左闭右开区间 `[from, to)`
+这道题看似和前两题一样，但隐藏着一个关于“区间定义”的微妙变化：
+*   在 `from` 站，乘客上车，车上人数**增加**。
+*   在 `to` 站，这批乘客下车。这意味着**在 `to` 站这一时刻，车上已经不包含这批人了**。
+
+**关键点：** 这属于典型的**左闭右开区间** `[from, to)`。因此，我们在销账时**不需要 `end + 1`**！
+*   起点记账：`diff[from] += num`
+*   终点销账：`diff[to] -= num` （因为在 `to` 站这一瞬间，他们刚好离开）
+
+题目明确说明了车站范围在 `0` 到 `1000` 之间，因此我们可以直接开一个固定大小为 `1001` 的差分数组。
+
+---
+
+## 💻 3. 核心代码实现
+
+### Python3 实现
+```python
+class Solution:
+    def carPooling(self, trips: list[list[int]], capacity: int) -> bool:
+        # 题目给出站点范围在 0-1000 之间，开辟 1001 大小的固定数组
+        diff = [0] * 1001
+        
+        # 1. 处理左闭右开区间 [from, to)
+        for num, start, end in trips:
+            diff[start] += num
+            diff[end] -= num  # 人下车的那一刻就离开了，所以直接在 end 处销账
+            
+        # 2. 从左到右推骨牌（求前缀和），同时动态监控是否超载
+        current_passengers = 0
+        for i in range(1001):
+            current_passengers += diff[i]
+            if current_passengers > capacity:
+                return False  # 一旦超过座位数，直接返回失败
+                
+        return True
+```
+
+---
+
