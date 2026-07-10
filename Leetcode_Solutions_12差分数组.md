@@ -34,3 +34,48 @@
 
 ---
 
+# 母题
+# 📂 LeetCode 370. 区间加法 (Range Addition) ── 宗师级模板题解
+
+## 📖 1. 题目描述 (人话直译版)
+假设你有一个长度为 `length` 的数组，初始时**所有元素都为 0**。
+现在给你一个操作二维数组 `updates`，其中每个操作表示为：`updates[i] = [start, end, inc]`。
+这个操作的意思是：将数组中从索引 `start` 到 `end`（**包含两端**）的所有元素都加上 `inc`。
+
+请输出执行完所有 `updates` 操作后的**最终数组**。
+
+### 示例：
+*   **输入:** `length = 5`, `updates = [[1, 3, 2], [2, 4, 3], [0, 2, -2]]`
+*   **输出:** `[-2, 0, 3, 5, 3]`
+
+## 💡 2. 核心解题思路：差分金字塔
+如果我们用传统的暴力循环（`for` 遍历 `start` 到 `end`），每次操作的时间复杂度是 $O(N)$，总时间复杂度会飙升到 $O(M \times N)$（$M$ 为操作次数），直接超时。
+
+作为差分数组的鼻祖题，本题利用了**“起点记账、终点+1销账”**的终极奥义：
+1. **快速标记：** 面对一个指令 `[start, end, inc]`，我们不需要修改区间内的每一个数，只需要在差分数组 `diff` 的两头做两个 $O(1)$ 的记号：
+   * `diff[start] += inc` （红利开始）
+   * `diff[end + 1] -= inc` （红利期结束，吐出增量）
+2. **前缀和还原：** 所有的操作记录完毕后，从左到右做一次**前缀和（累加）**，就能像推倒多米诺骨牌一样，一气呵成还原出最终的物理数组。总时间复杂度完美降到 $O(M + N)$。
+
+## 💻 3. 核心代码实现
+
+### Python3 实现
+```python
+class Solution:
+    def getModifiedArray(self, length: int, updates: list[list[int]]) -> list[int]:
+        # 1. 初始化差分数组，大小和原数组一致
+        diff = [0] * length
+        
+        # 2. 遍历所有指令，进行 O(1) 的轻量级标记
+        for start, end, inc in updates:
+            diff[start] += inc
+            # 注意：只有当 end + 1 还在数组范围内时，才需要做减法减去红利
+            if end + 1 < length:
+                diff[end + 1] -= inc
+                
+        # 3. 从左到右推骨牌（求前缀和），直接在 diff 数组上原地复原出答案
+        for i in range(1, length):
+            diff[i] = diff[i - 1] + diff[i]
+            
+        return diff
+```
