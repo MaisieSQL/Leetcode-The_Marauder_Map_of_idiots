@@ -11,15 +11,15 @@
 *   **核心逻辑：** 维护一个固定大小为 $K$ 的堆。求前 $K$ 大用小顶堆（淘汰掉最穷的），求前 $K$ 小用大顶堆。将时间复杂度从全局排序的 $O(N \log N)$ 完美降低到 $O(N \log K)$。
 
 *   🟢 **Easy（打基础）：**
-    *   **703.** Kth Largest Element in a Stream（数据流中的第 K 大元素）
-    *   **1046.** Last Stone Weight（最后一块石头的重量 —— 体验频繁出入堆的基本功）
+    *   **703.** Kth Largest Element in a Stream ── 👑 **【已通关 🏆】**
+    *   **1046.** Last Stone Weight ── 👑 **【已通关 🏆】**
 *   🟡 **Medium（核心母题）：**
-    *   **215.** Kth Largest Element in an Array ── 👑 **【核心母题】**（你已通关 🏆）
-    *   **347.** Top K Frequent Elements ── 🔥 **【必刷变形】**（以哈希表统计的“频次”作为最值入堆）
+    *   **215.** Kth Largest Element in an Array ── 👑 **【核心母题 · 已通关 🏆】**
+    *   **347.** Top K Frequent Elements ── 🔥 **【必刷变形 · 已通关 🏆】**
     *   **973.** K Closest Points to Origin ── 🔥 **【必刷变形】**（以计算出来的“几何距离”作为最值入堆）
     *   **692.** Top K Frequent Words（多加了字符串字典序比较的排序变形）
 *   🔴 **Hard（极限挑战）：**
-    *   **239.** Sliding Window Maximum ── 🌟 **【经典 Hard】**（滑动窗口最大值。虽然最优解是单调队列，但“大顶堆 + 延迟删除”是面试中非常被面试官认可的经典堆解法）
+    *   **239.** Sliding Window Maximum ── 🌟 **【经典 Hard】**（滑动窗口最大值 —— 大顶堆 + 延迟删除解法）
 
 ## ⛓️ 第二类：多路归并（多军会师问题）
 
