@@ -491,3 +491,71 @@ class KthLargest(object):
         # 3. 堆顶永远是这 k 个数中最小的，也就是数据流中第 k 大的元素
         return self.min_heap[0]
 ```
+
+---
+
+# 📂 LeetCode 347. 前 K 个高频元素 (Top K Frequent Elements) ── 哈希计数与小顶堆过滤
+
+## 📖 1. 题目描述
+给你一个整数数组 `nums` 和一个整数 `k` ，请你返回其中出现频率最高的 `k` 个元素。你可以按 **任意顺序** 返回答案。
+
+### 示例 1：
+*   **输入:** `nums = [1,1,1,2,2,3], k = 2`
+*   **输出:** `[1,2]`
+*   **解释:** `1` 出现了 3 次，`2` 出现了 2 次，`3` 出现了 1 次。全场频率最高的前 2 个元素是 `1` 和 `2`。
+
+### 示例 2：
+*   **输入:** `nums = [1], k = 1`
+*   **输出:** `[1]`
+
+---
+
+## 💡 2. 破局关键：把“出现频次”当做入堆的筹码
+
+这道题是前面 **LeetCode 215** 和 **703** 的完美升级版。在之前的题目里，我们直接拿“数字本身的大小”去参与小顶堆的淘汰赛；而在这道题里，我们要比拼的是**“数字出现的频次”**。
+
+### 🧱 核心战术分为两步：
+1.  **账本清算（哈希表统计）：** 拿个小账本（在 Python 里叫 `Counter`，也就是哈希表），把每个数字出现了多少次统计得清清楚楚。
+    *   比如示例 1 统计完是：`{1: 3次, 2: 2次, 3: 1次}`。
+2.  **$K$ 人豪华游轮海选（小顶堆过滤）：**
+    *   我们依然维持一个容量为 $K$ 的**小顶堆**。
+    *   这次塞进堆里的组合是 `(频次, 数字)`。因为 Python 的堆在比较元组时，**默认会先比较第一个元素（即频次）**。
+    *   遍历账本里的每一个数字：
+        *   堆没满 $K$ 个时，直接往里塞。
+        *   堆满 $K$ 个了，就拿当前数字的频次，跟堆顶（全榜单频次最低的“守门员”）比一比。如果当前数字的频次更高，就把堆顶踢掉，换它上场！
+    *   遍历结束后，留在堆里的 $K$ 个组合，就是频次最高的前 $K$ 名。
+
+---
+
+## 💻 3. 核心代码实现 (Python3 & Java)
+
+### Python3 实现（使用 `collections.Counter` 和 `heapq`）
+```python
+import heapq
+from collections import Counter
+
+class Solution(object):
+    def topKFrequent(self, nums: list[int], k: int) -> list[int]:
+        # 1. 步骤一：统计每个数字出现的频率
+        # counter 结果类似于：{1: 3, 2: 2, 3: 1}
+        counter = Counter(nums)
+        
+        # 2. 步骤二：维护一个大小为 k 的小顶堆
+        min_heap = []
+        
+        # num 是字典的键（具体的数），freq 是字典的值（出现的频次）
+        for num, freq in counter.items():
+            # 堆还没满 k 个，无条件塞入 (freq, num)
+            if len(min_heap) < k:
+                heapq.heappush(min_heap, (freq, num))
+            # 堆满了，跟堆顶（当前全榜频次最少的守门员）的频次比拼
+            elif freq > min_heap[0][0]:
+                heapq.heappop(min_heap)
+                heapq.heappush(min_heap, (freq, num))
+                
+        # 3. 步骤三：从堆中提取出数字（我们只需要数字，不需要频次）
+        return [pair[1] for pair in min_heap]
+```
+
+---
+
