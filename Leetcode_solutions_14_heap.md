@@ -685,3 +685,88 @@ class Solution(object):
 
 ---
 
+# 📂 LeetCode 692. 前 K 个高频单词 (Top K Frequent Words) ── 堆的自定义“双标”比较机制
+
+## 📖 1. 题目描述
+给定一个单词列表 `words` 和一个整数 `k` ，返回其中出现频率最高的 `k` 个单词。
+
+返回的答案应该按**单词出现频率由高到低**排序。如果不同的单词有**相同**的出现频率， 则**字典序小的单词排在前面**。
+
+### 示例 1：
+*   **输入:** `words = ["i", "love", "leetcode", "i", "love", "coding"], k = 2`
+*   **输出:** `["i", "love"]`
+*   **解释:** `"i"` 和 `"love"` 都出现了 2 次，而其他单词只出现了 1 次。根据字典序，`"i"` 在 `"love"` 前面，所以结果为 `["i", "love"]`。
+
+### 示例 2：
+*   **输入:** `words = ["the", "day", "is", "sunny", "the", "the", "the", "sunny", "is", "is"], k = 4`
+*   **输出:** `["the", "is", "sunny", "day"]`
+*   **解释:** `"the"` 出现了 4 次，`"is"` 出现了 3 次，`"sunny"` 出现了 2 次，`"day"` 出现了 1 次。
+
+---
+
+## 💡 2. 破局关键：处理频次相同下的“双标”淘汰
+
+这道题表面上看起来和 **347. 前 K 个高频元素** 一模一样，但它暗藏了一个极其恶毒的隐藏大坑：**当频次相同时，要引入字符串的字典序比较**。
+
+为了找出前 $K$ 个最大的元素，根据我们的**守门员机制**，应当维持一个限制大小为 $K$ 的**小顶堆**。小顶堆的铁律是：**谁最差，谁就呆在堆顶被淘汰**。
+
+那么在这道题里，什么样的数据属于“最差”（应该呆在堆顶被优先踢掉）的呢？
+1.  **频次低**的算最差（这符合常规）。
+2.  **当频次一样时，字典序靠后（字母大）的算最差！**（例如 `"i"` 和 `"love"` 频次相同，由于 `"love"` 的字典序靠后，为了把 `"i"` 留下来，我们必须把 `"love"` 当作较差的一方顶在堆顶淘汰掉）。
+
+### 🚨 Python 的痛点与解法
+Python 标准库的 `heapq` 默认只支持小顶堆，且在比较元组 `(A, B)` 时，只能整体从小到大或整体从大到小。它**无法天然支持“频次要低频先出，单词要大字母先出”这种混合双标规则**。
+
+为了破局，我们在 Python 中需要**自定义一个包装类**，通过重写 `__lt__`（小于）运算符，直接告诉小顶堆如何判定谁该当“倒霉的堆顶守门员”。
+
+---
+
+## 💻 3. 核心代码实现 (Python3 & Java)
+
+### Python3 实现（自定义类重写比较规则）
+```python
+import heapq
+from collections import Counter
+
+# 1. 建立一个自定义包装类，强行扭转堆的比较行为
+class WordElement(object):
+    def __init__(self, freq, word):
+        self.freq = freq
+        self.word = word
+        
+    def __lt__(self, other):
+        # 核心“双标”淘汰逻辑：
+        # 如果频次不同，频次低的算“小”（小顶堆会把低频的顶在堆顶踢掉）
+        if self.freq != other.freq:
+            return self.freq < other.freq
+        # 如果频次相同，字母大的（字典序靠后的）反而算“小”！
+        # 这样小顶堆就会把字母大的顶在堆顶淘汰，从而安全留下字母小的！
+        return self.word > other.word
+
+class Solution(object):
+    def topKFrequent(self, words: list[str], k: int) -> list[str]:
+        # 1. 哈希表统计频次
+        counter = Counter(words)
+        min_heap = []
+        
+        # 2. 维护大小为 k 的小顶堆
+        for word, freq in counter.items():
+            element = WordElement(freq, word)
+            
+            if len(min_heap) < k:
+                heapq.heappush(min_heap, element)
+            # 这里的比较会自动触发 WordElement 内部我们重写的 __lt__ 规则
+            elif element > min_heap[0]:
+                heapq.heappop(min_heap)
+                heapq.heappush(min_heap, element)
+                
+        # 3. 倒出堆中的胜出者。因为小顶堆出来的顺序是从差到好，最后需要逆序
+        res = []
+        while min_heap:
+            res.append(heapq.heappop(min_heap).word)
+            
+        return res[::-1]
+```
+
+---
+
