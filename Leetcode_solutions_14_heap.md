@@ -415,3 +415,78 @@ class Solution(object):
 
 ---
 
+# 📂 LeetCode 703. 数据流中的第 K 大元素 (Kth Largest Element in a Stream) ── 小顶堆与排行榜机制
+
+## 📖 1. 题目描述
+
+设计一个类 `KthLargest`，用于找到数据流中第 `k` 大的元素。注意，它是**排序后**的第 `k` 大元素，而不是第 `k` 个不同的元素。
+
+你必须实现以下方法：
+*   `KthLargest(int k, int[] nums)`：使用整数 `k` 和整数流 `nums` 初始化对象。
+*   `int add(int val)`：将当前数据流中的新元素 `val` 插入，并返回当前数据流中第 `k` 大的元素。
+
+### 示例：
+*   **输入：**
+    `["KthLargest", "add", "add", "add", "add", "add"]`
+    `[[3, [4, 5, 8, 2]], [3], [5], [10], [9], [4]]`
+*   **输出：**
+    `[null, 4, 5, 5, 8, 8]`
+*   **模拟过程解释：**
+    ```python
+    kthLargest = KthLargest(3, [4, 5, 8, 2]) # 初始保留最大的 3 个：[4, 5, 8]
+    kthLargest.add(3)   # 3 <= 4（当前第3大），不入榜，返回 4
+    kthLargest.add(5)   # 5 > 4，剔除 4，加入 5，榜单 [5, 5, 8]，返回 5
+    kthLargest.add(10)  # 10 > 5，剔除 5，加入 10，榜单 [5, 8, 10]，返回 5
+    kthLargest.add(9)   # 9 > 5，剔除 5，加入 9，榜单 [8, 9, 10]，返回 8
+    kthLargest.add(4)   # 4 <= 8，不入榜，返回 8
+    ```
+
+## 💡 2. 破局关键：利用小顶堆做“守门员”
+
+如果每次添加新数据都对整个数组进行排序，时间复杂度会达到 $O(N \log N)$，这在持续输入的数据流中效率极低。
+
+### 🧱 核心思维：
+我们只需要知道前 $k$ 个最大的数，以及它们之中最小的那个（即第 $k$ 大）。
+1.  **限制堆的大小为 $k$：** 我们用一个**小顶堆（Min-Heap）**来充当这个容量为 $k$ 的“高手榜单”。
+2.  **小顶堆的性质：** 堆顶元素（`heap[0]`）永远是这 $k$ 个数里**最小**的一个。换句话说，堆顶就是这个榜单的**“守门员”**。
+3.  **动态淘汰逻辑：**
+    *   如果堆的长度小于 $k$，新数字直接入堆。
+    *   如果堆的长度已满 $k$：
+        *   新加入的数比堆顶（守门员）还小，说明它绝对无法进入前 $k$ 名，直接丢弃。
+        *   新加入的数比堆顶大，说明它有资格上榜。我们把堆顶踢出（`heappop`），再把这个新数塞入（`heappush`）。
+    *   在任何时候，**堆顶的元素就是我们要求的第 $k$ 大元素**。
+
+## 💻 3. 核心代码实现 (Python3 & Java)
+
+### Python3 实现（使用 `heapq` 库）
+```python
+import heapq
+
+class KthLargest(object):
+
+    def __init__(self, k: int, nums: list[int]):
+        """
+        初始化对象，并维护一个大小最多为 k 的小顶堆
+        """
+        self.k = k
+        self.min_heap = []
+        
+        # 将初始列表中的元素依次加入堆中
+        for num in nums:
+            self.add(num)
+
+    def add(self, val: int) -> int:
+        """
+        将新元素 val 插入，并返回当前第 k 大的元素
+        """
+        # 1. 如果堆的大小还没到 k，直接入堆
+        if len(self.min_heap) < self.k:
+            heapq.heappush(self.min_heap, val)
+        # 2. 如果堆已满，且新数大于堆顶元素（守门员），则踢出堆顶，放入新数
+        elif val > self.min_heap[0]:
+            heapq.heappop(self.min_heap)
+            heapq.heappush(self.min_heap, val)
+            
+        # 3. 堆顶永远是这 k 个数中最小的，也就是数据流中第 k 大的元素
+        return self.min_heap[0]
+```
