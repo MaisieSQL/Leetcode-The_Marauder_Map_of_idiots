@@ -411,5 +411,7 @@ class Solution(object):
         return -max_heap[0] if max_heap else 0
 ```
 
+⏱️ 4. 复杂度分析Time (时间复杂度)：$O(N \log N)$建堆阶段： 耗时 $O(N)$。模拟碰撞阶段： while 循环最多执行 $N - 1$ 次。在每次循环中，我们最多执行 $2$ 次弹出操作（heappop）和 $1$ 次插入操作（heappush）。每次堆操作的时间复杂度均为 $O(\log N)$。因此总时间复杂度为 $O(N \log N)$。Space (空间复杂度)：$O(N)$我们需要开辟一个大小为 $N$ 的堆空间来存储这些石头的负值重量。
+
 ---
 
