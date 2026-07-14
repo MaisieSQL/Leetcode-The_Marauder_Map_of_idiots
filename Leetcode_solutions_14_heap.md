@@ -16,7 +16,7 @@
 *   🟡 **Medium（核心母题）：**
     *   **215.** Kth Largest Element in an Array ── 👑 **【核心母题 · 已通关 🏆】**
     *   **347.** Top K Frequent Elements ── 🔥 **【必刷变形 · 已通关 🏆】**
-    *   **973.** K Closest Points to Origin ── 🔥 **【必刷变形】**（以计算出来的“几何距离”作为最值入堆）
+    *   **973.** K Closest Points to Origin ── 🔥 **【必刷变形 · 已通关 🏆】**（以计算出来的“几何距离”作为最值入堆）
     *   **692.** Top K Frequent Words（多加了字符串字典序比较的排序变形）
 *   🔴 **Hard（极限挑战）：**
     *   **239.** Sliding Window Maximum ── 🌟 **【经典 Hard】**（滑动窗口最大值 —— 大顶堆 + 延迟删除解法）
