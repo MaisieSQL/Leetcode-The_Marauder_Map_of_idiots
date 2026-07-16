@@ -25,8 +25,6 @@
 4. **四向探索**：递归调用上下左右四个方向 `dfs(r + 1, c, i + 1) or dfs(r - 1, c, i + 1) ...`。
 5. **回溯（清理现场）**：递归返回前，必须将当前位置还原 `board[r][c] = temp`，以免影响其他路径的搜索。
 
----
-
 ### 3. Python 核心实现
 
 ```python
@@ -67,5 +65,61 @@ class Solution:
                     if dfs(r, c, 0):
                         return True
         return False
+```
+
+# 🟡 LeetCode 39. Combination Sum
+
+### 1. 题目描述
+给你一个**无重复元素**的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的所有**唯一组合**。
+
+`candidates` 中的同一个数字可以**无限制重复被选取**。如果至少一个数字的被选数量不同，则两种组合是唯一的。
+
+**示例 1:**
+> **输入:** candidates = [2,3,6,7], target = 7  
+> **输出:** [[2,2,3],[7]]  
+> **解释:** 2 和 3 可以形成 2 + 2 + 3 = 7 。注意 2 可以使用多次。7 也是一个候选， 2 + 2 + 3 = 7 。这里只有两种组合。
+
+### 2. 核心思路：二叉决策树 (Decision Tree)
+为了**彻底避免产生重复的组合**（例如产生 `[2, 2, 3]` 后又产生 `[2, 3, 2]`），我们采用**顺序选择法**。在决策树的每一层，我们只针对当前索引 `i` 的元素做两个选择：
+
+1. **选当前元素**：
+   * 将 `candidates[i]` 加入路径 `cur`。
+   * 递归进入下一层，**索引保持为 `i`**（因为可以重复使用），`total` 累加。
+2. **不选当前元素**：
+   * 将刚才加进去的 `candidates[i]` 从 `cur` 中弹出（**回溯清理**）。
+   * 递归进入下一层，**索引强制推进到 `i + 1`**（此后该分支再也无法选取 `candidates[i]`）。
+
+这种“要或不要”的二叉树分叉，保证了元素的选择顺序永远是单向向右的，天然去重。
+
+### 3. Python 完整实现
+
+```python
+class Solution:
+    def combinationSum(self, candidates: list[int], target: int) -> list[list[str]]:
+        res = []
+        
+        # 1. 排序可以让我们在 total > target 时提前退出，减少不必要的计算
+        candidates.sort()
+        
+        def dfs(i: int, cur: list[int], total: int):
+            # 成功出口
+            if total == target:
+                res.append(cur.copy())  # 必须使用深拷贝
+                return
+            
+            # 失败出口：索引越界 或 累加和已超标
+            if i >= len(candidates) or total > target:
+                return
+            
+            # 选择 1：包含 candidates[i]
+            cur.append(candidates[i])
+            dfs(i, cur, total + candidates[i])  # 索引保持 i
+            
+            # 选择 2：不包含 candidates[i]（先 pop 回溯，再推进索引）
+            cur.pop()
+            dfs(i + 1, cur, total)              # 索引推进到 i + 1
+
+        dfs(0, [], 0)
+        return res
 ```
 
