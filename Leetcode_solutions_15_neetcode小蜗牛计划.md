@@ -456,3 +456,101 @@ class Solution:
         return res
 ```
 
+# 🔴 LeetCode 212. Word Search II
+
+### 1. 题目描述
+给定一个 $m \times n$ 的字符网格 `board` 和一个字符串列表 `words`，找出所有同时在网格和列表中出现的单词。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中**不允许重复使用**。
+
+**示例:**
+> **输入:** 
+> board = [
+>   ["o","a","a","n"],
+>   ["e","t","a","e"],
+>   ["i","h","k","r"],
+>   ["i","f","l","v"]
+> ]
+> words = ["oath","pea","eat","rain"]  
+> **输出:** ["eat","oath"]
+
+---
+
+### 2. 核心思路：Trie + 网格 DFS 剪枝
+如果像 Word Search I 一样，对 `words` 里的每一个单词都单独在网格中做一次 DFS 搜索，时间复杂度会直接爆表（TLE）。
+
+#### 破局点：利用前缀树进行“前缀级剪枝”
+1. **构建 Trie**：先把所有的待查单词 `words` 建成一棵前缀树。
+2. **在网格中进行 DFS**：
+   * 从网格的每一个格子出发，开始进行 DFS。
+   * 在 DFS 递归的过程中，**让网格的坐标移动与 Trie 树的指针移动同步进行**。
+   * **核心剪枝**：如果当前走到的字符在 Trie 树的当前节点中**没有对应的子节点**，说明继续往下搜不可能拼出任何一个候选单词，此时**立刻回溯返回（剪枝）**。
+
+#### 极致性能优化大招：
+* **去重**：我们在 Trie 树的叶子节点直接存放完整的 `word` 字符串。当 DFS 搜索到叶子节点时，直接把 `word` 加入结果，然后**把 `node.word` 置为 `None`**，这样在网格的其他路径中如果再次搜到该单词，也不会重复添加。
+* **物理剪枝（删除叶子节点）**：当一个单词被找到后，如果该路径上的节点已经没有其他分支（即 `not next_node.children`），我们可以**直接从父节点中删掉它**（`del node.children[char]`）。这样，后续的 DFS 路径就不会再白白扫描这条失效的路径，算法运行速度可飙升数倍！
+
+---
+
+### 3. Python 完整实现
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None  # 如果该节点是某个单词的末尾，直接存下完整单词本身
+
+class Solution:
+    def findWords(self, board: list[list[str]], words: list[str]) -> list[str]:
+        # 1. 建立前缀树 (Trie)
+        root = TrieNode()
+        for w in words:
+            curr = root
+            for char in w:
+                if char not in curr.children:
+                    curr.children[char] = TrieNode()
+                curr = curr.children[char]
+            curr.word = w  # 在结尾节点存入单词本身
+
+        ROWS, COLS = len(board), len(board[0])
+        res = []
+
+        # 2. 网格 DFS
+        def dfs(r: int, c: int, node: TrieNode):
+            char = board[r][c]
+            # 如果当前格子字符在前缀树中无法匹配，直接剪枝
+            if char not in node.children:
+                return
+
+            next_node = node.children[char]
+            
+            # 找到一个有效单词
+            if next_node.word:
+                res.append(next_node.word)
+                next_node.word = None  # 去重：防止在网格的其他路径中重复收集该词
+
+            # 标记已访问（回溯核心：临时更改字符防止回头路）
+            board[r][c] = "#"
+
+            # 往上下左右四个方向探索
+            for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < ROWS and 0 <= nc < COLS and board[nr][nc] != "#":
+                    dfs(nr, nc, next_node)
+
+            # 恢复网格原样（还原现场）
+            board[r][c] = char
+
+            # --- 极致优化：回溯去重剪枝 ---
+            # 如果这个子树的叶子已经没有其他分支了，直接把它从父节点中剔除
+            if not next_node.children:
+                del node.children[char]
+
+        # 遍历网格中的每一个格子作为起点
+        for r in range(ROWS):
+            for c in range(COLS):
+                dfs(r, c, root)
+
+        return res
+```
+
