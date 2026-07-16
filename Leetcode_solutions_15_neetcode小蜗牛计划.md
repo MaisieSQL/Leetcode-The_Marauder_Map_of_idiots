@@ -3,9 +3,12 @@
 
 ---
 ## Section 1 复习昨天discord的3道题:
-**Word Search** Medium
-**CombinationSum ** Medium
-**Find Median Fro** Hard
+**Word Search**: 
+  Medium
+**CombinationSum **:
+  Medium
+**Find Median Fro**:
+  Hard
 
 
 
