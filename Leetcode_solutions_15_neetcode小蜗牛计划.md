@@ -123,3 +123,80 @@ class Solution:
         return res
 ```
 
+# 🔴 LeetCode 295. Find Median From Data Stream
+
+### 1. 题目描述
+实现一个 `MedianFinder` 类，支持以下两个操作：
+* `addNum(int num)`：从数据流中添加一个整数到数据结构中。
+* `findMedian()`：返回目前所有元素的中位数。
+
+**示例:**
+```python
+finder = MedianFinder()
+finder.addNum(1)
+finder.addNum(2)
+# 目前数据为 [1, 2]，中位数是 (1 + 2) / 2 = 1.5
+print(finder.findMedian()) # 输出 1.5
+
+finder.addNum(3)
+# 目前数据为 [1, 2, 3]，中位数是中间的 2
+print(finder.findMedian()) # 输出 2.0
+```
+
+### 2. 核心思路：双堆对顶 (Two Heaps)
+如果每次求中位数都对数组进行排序，时间复杂度会达到 $O(N \log N)$，即使插入时用二分查找，移动元素也需要 $O(N)$。
+
+为了实现高效的动态查询，我们将有序数据流一分为二：
+* **前半部分（较小的一半）**：用一个 **大顶堆 (Max-Heap)** 维护，我们只需要它的最大值。
+* **后半部分（较大的一半）**：用一个 **小顶堆 (Min-Heap)** 维护，我们只需要它的最小值。
+
+#### 核心维护规则（平衡约束）：
+1. **数值大小关系**：大顶堆的最大值（堆顶）必须永远小于或等于小顶堆的最小值（堆顶）。
+2. **元素数量平衡**：两个堆的元素个数差值绝对值不能超过 1：
+   $$\left| \text{len(small)} - \text{len(large)} \right| \le 1$$
+
+### 3. Python 完整实现
+> **注意**：Python 内建的 `heapq` 库仅支持小顶堆。为了实现大顶堆，我们需要在存入数据时将数字乘以 -1，取出使用或比较时再乘以 -1 还原。
+
+```python
+import heapq
+
+class MedianFinder:
+
+    def __init__(self):
+        # small 是大顶堆，用来存较小的前半部分。
+        # 存入负数来模拟大顶堆。
+        self.small = [] 
+        # large 是小顶堆，用来存较大的后半部分。
+        self.large = [] 
+
+    def addNum(self, num: int) -> None:
+        # 1. 默认先放进大顶堆 small（存为负数）
+        heapq.heappush(self.small, -num)
+        
+        # 2. 确保大顶堆的最大值 <= 小顶堆的最小值
+        if self.small and self.large and (-self.small[0] > self.large[0]):
+            val = -heapq.heappop(self.small)
+            heapq.heappush(self.large, val)
+            
+        # 3. 确保两个堆的数量差不超过 1
+        if len(self.small) > len(self.large) + 1:
+            val = -heapq.heappop(self.small)
+            heapq.heappush(self.large, val)
+        elif len(self.large) > len(self.small) + 1:
+            val = heapq.heappop(self.large)
+            heapq.heappush(self.small, -val)
+
+    def findMedian(self) -> float:
+        # 如果两堆数量不等，数量多的那个堆的堆顶就是中位数
+        if len(self.small) > len(self.large):
+            return float(-self.small[0])
+        elif len(self.large) > len(self.small):
+            return float(self.large[0])
+        
+        # 如果两堆数量相等，中位数是两个堆顶元素的平均值
+        return (-self.small[0] + self.large[0]) / 2.0
+```
+
+---
+
