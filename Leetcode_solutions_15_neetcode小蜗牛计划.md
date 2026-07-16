@@ -3,9 +3,9 @@
 
 ---
 ## Section 1 复习昨天discord的3道题:
-* **Word Search**:  Medium
+* **Word Search**:(Medium)
   DFS/Backtracking
-* **CombinationSum**:  Medium
+* **CombinationSum**:(Medium)
   Backtracking
-* **Find Median From Data Stream**:  Hard
+* **Find Median From Data Stream**:(Hard)
   Two Pointers/Heap/Sorting
