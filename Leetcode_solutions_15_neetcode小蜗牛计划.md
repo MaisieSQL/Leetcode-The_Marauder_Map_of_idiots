@@ -3,11 +3,11 @@
 
 ---
 ## Section 1 复习昨天discord的3道题:
-**Word Search**: 
+* **Word Search**:  
   Medium
-**CombinationSum **:
+* **CombinationSum**:  
   Medium
-**Find Median Fro**:
+* **Find Median From Data Stream**:  
   Hard
 
 
