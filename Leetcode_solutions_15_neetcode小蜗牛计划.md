@@ -200,3 +200,259 @@ class MedianFinder:
 
 ---
 
+今天的这三道题非常完美——它们是前缀树（Trie Tree）的“全家桶三部曲”！
+
+这三道题在逻辑上是层层递进的：
+
+* Implement Trie：教你从零构建最基础的前缀树。
+
+* Design Add and Search Word：在前缀树基础上加上模糊匹配（引入回溯/DFS）。
+
+* Word Search II：将前缀树与前面的网格回溯（Word Search I）融会贯通，是极其经典的 Hard 题。
+
+# 🟢 LeetCode 208. Implement Trie (Prefix Tree)
+
+### 1. 题目描述
+Trie（发音为 "try"）或**前缀树**是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。这一数据结构有相当多的应用情景，例如自动补全和拼写检查。
+
+请实现 `Trie` 类：
+* `Trie()`：初始化前缀树对象。
+* `void insert(String word)`：向前缀树中插入字符串 `word` 。
+* `boolean search(String word)`：如果字符串 `word` 在前缀树中，返回 `true`（即，在检索之前已经插入）；否则，返回 `false`。
+* `boolean startsWith(String prefix)`：如果之前已经插入的字符串 `word` 的前缀之一为 `prefix` ，返回 `true` ；否则，返回 `false`。
+
+---
+
+### 2. 核心思路：多叉树结构 (Multi-way Tree)
+Trie 树本质上是一棵多叉树，它的每一个节点代表一个字符。从根节点到某一个节点的路径，就代表一个字符串。
+
+#### 节点结构设计 (`TrieNode`)：
+每个节点只需要维护两样东西：
+1. **子节点映射 (`children`)**：我们可以使用一个哈希表（Dictionary）来存储子节点，键（Key）为字符，值（Value）为指向下一个 `TrieNode` 的引用。
+2. **结束标记 (`is_word`)**：一个布尔值，表示是否有单词在此处结束。如果不做这个标记，我们就无法区分插入的是 "apple" 还是仅仅是一个前缀 "app"。
+
+---
+
+### 3. Python 完整实现
+
+```python
+class TrieNode:
+    def __init__(self):
+        # 使用哈希表存储子节点：{ 'a': TrieNode, 'b': TrieNode }
+        self.children = {}
+        # 标记是否有完整单词在此节点结束
+        self.is_word = False
+
+class Trie:
+
+    def __init__(self):
+        # 初始化根节点，根节点本身不存储字符
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        """
+        向前缀树中插入一个单词
+        时间复杂度: O(L), L 是单词长度
+        """
+        curr = self.root
+        for char in word:
+            # 如果字符不存在，就创建新的子节点
+            if char not in curr.children:
+                curr.children[char] = TrieNode()
+            # 移动指针到子节点
+            curr = curr.children[char]
+        # 单词插入完毕，标记结尾
+        curr.is_word = True
+
+    def search(self, word: str) -> bool:
+        """
+        判断单词是否存在于前缀树中
+        时间复杂度: O(L), L 是单词长度
+        """
+        curr = self.root
+        for char in word:
+            if char not in curr.children:
+                return False
+            curr = curr.children[char]
+        # 必须同时满足：路径走完，且该位置被标记为单词结尾
+        return curr.is_word
+
+    def startsWith(self, prefix: str) -> bool:
+        """
+        判断是否存在以 prefix 为前缀的单词
+        时间复杂度: O(P), P 是前缀长度
+        """
+        curr = self.root
+        for char in prefix:
+            if char not in curr.children:
+                return False
+            curr = curr.children[char]
+        # 只要能顺利走完前缀的所有路径，说明该前缀一定存在
+        return True
+```
+
+# 🟡 LeetCode 211. Design Add and Search Word Data Structure
+
+### 1. 题目描述
+请你设计一个数据结构，支持添加新单词和查找字符串是否与任何先前添加的字符串匹配。
+
+实现 `WordDictionary` 类：
+* `WordDictionary()`：初始化对象。
+* `void addWord(String word)`：将 `word` 添加到数据结构中，之后可以对它进行匹配。
+* `bool search(String word)`：如果数据结构中存在字符串与 `word` 匹配，则返回 `true`，否则返回 `false`。
+* `word` 中可能包含字符 `'.'`，`.` 可以匹配任何单个字母。
+
+---
+
+### 2. 核心思路：带回溯的 Trie 搜索 (Trie + DFS)
+这道题的基础依然是 Trie（前缀树），但多了一个 `. ` 通配符。
+
+* **普通字符匹配**：和普通的 Trie 查找一样，直接沿着对应的子节点走。
+* **`.` 通配符匹配**：当我们遇到 `.` 时，由于它能代表任何字符，我们**无法确定唯一的一条路径**。此时必须采用 **DFS（深度优先搜索）**，遍历当前节点的所有子节点（`children`），只要任意一个分支能走通（返回 `True`），整个搜索就返回 `True`。
+
+---
+
+### 3. Python 完整实现
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_word = False
+
+class WordDictionary:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def addWord(self, word: str) -> None:
+        """ 正常插入，与标准 Trie 一致 """
+        curr = self.root
+        for char in word:
+            if char not in curr.children:
+                curr.children[char] = TrieNode()
+            curr = curr.children[char]
+        curr.is_word = True
+
+    def search(self, word: str) -> bool:
+        """ 使用 DFS 处理通配符 '.' """
+        def dfs(j: int, root: TrieNode) -> bool:
+            curr = root
+            
+            for i in range(j, len(word)):
+                char = word[i]
+                
+                if char == ".":
+                    # 遇到 '.'，尝试当前节点的所有子节点分支
+                    for child in curr.children.values():
+                        if dfs(i + 1, child):
+                            return True
+                    return False
+                else:
+                    # 正常字符匹配
+                    if char not in curr.children:
+                        return False
+                    curr = curr.children[char]
+            
+            return curr.is_word
+
+        return dfs(0, self.root)
+```
+
+# 🔴 LeetCode 212. Word Search II
+
+### 1. 题目描述
+给定一个 $m \times n$ 的字符网格 `board` 和一个字符串列表 `words`，找出所有同时在网格和列表中出现的单词。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中**不允许重复使用**。
+
+**示例:**
+> **输入:** 
+> board = [
+>   ["o","a","a","n"],
+>   ["e","t","a","e"],
+>   ["i","h","k","r"],
+>   ["i","f","l","v"]
+> ]
+> words = ["oath","pea","eat","rain"]  
+> **输出:** ["eat","oath"]
+
+---
+
+### 2. 核心思路：Trie + 网格 DFS 剪枝
+如果像 Word Search I 一样，对 `words` 里的每一个单词都单独在网格中做一次 DFS 搜索，时间复杂度会直接爆表（TLE）。
+
+#### 破局点：利用前缀树进行“前缀级剪枝”
+1. **构建 Trie**：先把所有的待查单词 `words` 建成一棵前缀树。
+2. **在网格中进行 DFS**：
+   * 从网格的每一个格子出发，开始进行 DFS。
+   * 在 DFS 递归的过程中，**让网格的坐标移动与 Trie 树的指针移动同步进行**。
+   * **核心剪枝**：如果当前走到的字符在 Trie 树的当前节点中**没有对应的子节点**，说明继续往下搜不可能拼出任何一个候选单词，此时**立刻回溯返回（剪枝）**。
+
+#### 极致性能优化大招：
+* **去重**：我们在 Trie 树的叶子节点直接存放完整的 `word` 字符串。当 DFS 搜索到叶子节点时，直接把 `word` 加入结果，然后**把 `node.word` 置为 `None`**，这样在网格的其他路径中如果再次搜到该单词，也不会重复添加。
+* **物理剪枝（删除叶子节点）**：当一个单词被找到后，如果该路径上的节点已经没有其他分支（即 `not next_node.children`），我们可以**直接从父节点中删掉它**（`del node.children[char]`）。这样，后续的 DFS 路径就不会再白白扫描这条失效的路径，算法运行速度可飙升数倍！
+
+---
+
+### 3. Python 完整实现
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None  # 如果该节点是某个单词的末尾，直接存下完整单词本身
+
+class Solution:
+    def findWords(self, board: list[list[str]], words: list[str]) -> list[str]:
+        # 1. 建立前缀树 (Trie)
+        root = TrieNode()
+        for w in words:
+            curr = root
+            for char in w:
+                if char not in curr.children:
+                    curr.children[char] = TrieNode()
+                curr = curr.children[char]
+            curr.word = w  # 在结尾节点存入单词本身
+
+        ROWS, COLS = len(board), len(board[0])
+        res = []
+
+        # 2. 网格 DFS
+        def dfs(r: int, c: int, node: TrieNode):
+            char = board[r][c]
+            # 如果当前格子字符在前缀树中无法匹配，直接剪枝
+            if char not in node.children:
+                return
+
+            next_node = node.children[char]
+            
+            # 找到一个有效单词
+            if next_node.word:
+                res.append(next_node.word)
+                next_node.word = None  # 去重：防止在网格的其他路径中重复收集该词
+
+            # 标记已访问（回溯核心：临时更改字符防止回头路）
+            board[r][c] = "#"
+
+            # 往上下左右四个方向探索
+            for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < ROWS and 0 <= nc < COLS and board[nr][nc] != "#":
+                    dfs(nr, nc, next_node)
+
+            # 恢复网格原样（还原现场）
+            board[r][c] = char
+
+            # --- 极致优化：回溯去重剪枝 ---
+            # 如果这个子树的叶子已经没有其他分支了，直接把它从父节点中剔除
+            if not next_node.children:
+                del node.children[char]
+
+        # 遍历网格中的每一个格子作为起点
+        for r in range(ROWS):
+            for c in range(COLS):
+                dfs(r, c, root)
+
+        return res
+```
+
