@@ -742,4 +742,95 @@ class Solution(object):
 这两道 Blind 75 母题在图的行军逻辑上完全是对称的：
 * **200. 岛屿数量**：邻居是固定的上下左右 4 个格子。通过砸成 `"0"` 原位核销，防回头。
 * **133. 克隆图**：邻居是数量动态不固定的 `neighbors` 指针列表。通过写入 `old_to_new` 哈希表原位登记，防套娃死循环。
+
 ---
+
+# 🪓 LeetCode 417. Pacific Atlantic Water Flow (太平洋大西洋水流问题)
+
+## 🏛️ 一、 核心痛点：为什么正向思维（每个格子都流一次）必死？
+题目给你一个 M * N 的高程网格（高度矩阵）。网格的**左边和上边**连接着**太平洋（Pacific）**，**右边和下边**连接着**大西洋（Atlantic）**。水只能从高处（或等高处）往低处流。让你找出哪些格子里的水，既能流进太平洋，又能流进大西洋。
+
+* **新手雷区（正向思维）**：对网格里的**每一个格子**都发起一次 DFS/BFS，看它能不能摸到左/上边界，再看它能不能摸到右/下边界。
+* **物理大爆雷**：全场一共有 M * N 个格子。每个格子如果都漫无目的地去试探流一遍，单次最坏要走 M * N 步。总时间复杂度直接暴涨到恐怖的 **O((M * N)^2)**！面试官看到这个当场就会把你挂掉，LeetCode 也会直接甩给你一个无情的 `Time Limit Exceeded`（超时死给你看）！
+
+---
+
+## ⏱️ 二、 破局大杀器：战略逆向思维 ➔ 【大坝逆流放水，海面双向合围】
+
+既然从山顶找大海极其绝望，我们为什么不**反过来，从大海往山顶抽水？！**
+
+### 🎰 逆向行军规则：
+1. **水的物理特性改变**：正向是从高往低流；**逆向就是从低向高爬（只要邻居的高度大于或等于当前高度，水就能反向抽上去）**！
+2. **太平洋战线（Pacific Reachable Set）**：
+   * 我们在左边界和上边界（太平洋海面）筑起第一道总指挥部。
+   * 从这些海边格子作为源头同时发起 DFS 逆流向上爬。只要能爬到的高山格子，全部在 `pacific_reachable` 账本上打个勾（加入 Set）。
+3. **大西洋战线（Atlantic Reachable Set）**：
+   * 我们在右边界和下边界（大西洋海面）筑起第二道总指挥部。
+   * 从这些海边格子作为源头同时发起 DFS 逆流向上爬。只要能爬到的高山格子，全部在 `atlantic_reachable` 账本上打个勾。
+4. **终极胜利会师**：
+   * 全盘扫描全场，如果某一个高山格子**既在太平洋的账本里，又在大西洋的账本里**，说明如果从这里正向放水，它能同时流进两大洋！
+
+通过这种逆向会师，我们只从边界四条边出手，每个格子最多被两边的洪流各污染一次，总时间复杂度瞬间降维打击压缩到绝对线性的 **O(M * N)**！
+
+---
+
+## 💻 三、 真命通关战车（Python3 纯净源码）
+
+```python
+class Solution(object):
+    def pacificAtlantic(self, heights):
+        """
+        :type heights: List[List[int]]
+        :rtype: List[List[int]]
+        """
+        if not heights or not heights[0]:
+            return []
+            
+        nrow, ncol = len(heights), len(heights[0])
+        
+        # 🎰 战略账本兼第一道防线：记录两大洋逆流能爬到的高山格子地址
+        pacific_reachable = set()
+        atlantic_reachable = set()
+        
+        # 定义逆流 DFS
+        def dfs(r, c, reachable, prev_height):
+            # 1. 拦截熔断：跨出网格边界 
+            # 或者 这个格子已经爬过了（直接去重，防走回头路死循环）
+            # 或者 邻居的高度竟然比我刚才的高（正向流不下来，逆向就爬不上去！熔断！）
+            if (r < 0 or r >= nrow or c < 0 or c >= ncol or 
+                (r, c) in reachable or heights[r][c] < prev_height):
+                return
+            
+            # 2. 占领高地：成功逆流爬上这个格子，现场在账本上登记
+            reachable.add((r, c))
+            
+            # 3. 轰鸣四方：带着当前格子的高度，强行向上下左右四个方向的更高处发起冲锋
+            dfs(r + 1, c, reachable, heights[r][c])
+            dfs(r - 1, c, reachable, heights[r][c])
+            dfs(r, c + 1, reachable, heights[r][c])
+            dfs(r, c - 1, reachable, heights[r][c])
+
+        # 🚀 第一战役：横向边界放水（第一行和最后一行）
+        for j in range(ncol):
+            # 从北边（第一行）往南爬 ➔ 灌溉太平洋
+            dfs(0, j, pacific_reachable, heights[0][j])
+            # 从南边（最后一行）往北爬 ➔ 灌溉大西洋
+            dfs(nrow - 1, j, atlantic_reachable, heights[nrow - 1][j])
+            
+        # 🚀 第二战役：纵向边界放水（第一列和最后一列）
+        for i in range(nrow):
+            # 从西边（第一列）往东爬 ➔ 灌溉太平洋
+            dfs(i, 0, pacific_reachable, heights[i][0])
+            # 从东边（最后一列）往西爬 ➔ 灌溉大西洋
+            dfs(i, ncol - 1, atlantic_reachable, heights[i][ncol - 1])
+            
+        # 🚀 最终会师：清算大盘，找出同时被两大洋合围打勾的黄金交叉点
+        result = []
+        for i in range(nrow):
+            for j in range(ncol):
+                if (i, j) in pacific_reachable and (i, j) in atlantic_reachable:
+                    result.append([i, j])
+                    
+        return result
+```
+
