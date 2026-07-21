@@ -243,3 +243,31 @@ class Solution:
             
         return dp[n]
 ```
+
+### 方法二：滚动变量优化（空间复杂度 $O(1)$）
+
+[cite_start]由于 `dp[i]` 只与前两个状态有关 [cite: 68][cite_start]，我们只需维护两个局部变量代表 `dp[i-2]` 和 `dp[i-1]` ：
+
+```python
+class Solution:
+    def minCostClimbingStairs(self, cost: list[int]) -> int:
+        # dp0 代表 dp[i-2]，dp1 代表 dp[i-1]
+        dp0, dp1 = 0, 0
+        
+        for i in range(2, len(cost) + 1):
+            next_dp = min(dp1 + cost[i - 1], dp0 + cost[i - 2])
+            dp0 = dp1
+            dp1 = next_dp
+            
+        return dp1
+```
+
+### ⏱️ 复杂度分析
+
+| 维度 | 时间复杂度 | 空间复杂度 | 说明 |
+| :--- | :---: | :---: | :--- |
+| **标准 DP** | $O(n)$ | $O(n)$ | 需要一个长度为 $n+1$ 的 dp 数组 |
+| **滚动变量优化** | $O(n)$ | $O(1)$ | 仅使用 2 个变量滚动记录前两阶状态 |
+
+---
+
