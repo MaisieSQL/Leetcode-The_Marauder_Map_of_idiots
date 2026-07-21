@@ -21,7 +21,7 @@
 ### 🟢 第一阶：入门与基础递推（体会状态转移）
 > **核心**：理解当前状态只依赖于前几个状态。
 
-1. **LeetCode 70. 爬楼梯 (Climbing Stairs)**
+1. **LeetCode 70. 爬楼梯 (Climbing Stairs)** `[NeetCode / Blind 75]`
    - **核心考点**：最基础的一维 DP。
    - **状态转移**：`dp[i] = dp[i-1] + dp[i-2]`（本质是斐波那契数列）。
 
@@ -35,46 +35,68 @@
 
 ---
 
-### 🟡 第二阶：打家劫舍与序列问题（选择与决策）
-> **核心**：选还是不选？包含状态机的雏形。
+### 🟡 第二阶：打家劫舍与序列决策问题（选择与状态转换）
+> **核心**：选还是不选？包含状态转换与约束逻辑。
 
-1. **LeetCode 198. 打家劫舍 (House Robber)**
+1. **LeetCode 198. 打家劫舍 (House Robber)** `[NeetCode / Blind 75]`
    - **核心考点**：相邻房屋不能连偷（偷 vs 不偷）。
    - **状态转移**：`dp[i] = max(dp[i-1], dp[i-2] + nums[i])`。
 
-2. **LeetCode 213. 打家劫舍 II (House Robber II)**
+2. **LeetCode 213. 打家劫舍 II (House Robber II)** `[NeetCode / Blind 75]`
    - **核心考点**：房屋首尾相连成环。
    - **解题思路**：拆分为两个一维问题（偷第一家不偷最后一家 vs 偷最后一家不偷第一家）。
 
+3. **LeetCode 91. 解码方法 (Decode Ways)** `[NeetCode / Blind 75]`
+   - **核心考点**：序列拆分决策（单字符解码 vs 双字符组合解码）。
+   - **解题思路**：结合前 1 位与前 2 位字符的合法性，判定是否将累加方案转移至 `dp[i]`。
+
+4. **LeetCode 152. 乘积最大子数组 (Maximum Product Subarray)** `[NeetCode / Blind 75]`
+   - **核心考点**：状态机/双状态维持（处理负数乘负数变正数的情况）。
+   - **解题思路**：同时维护 `max_dp[i]` 和 `min_dp[i]` 两个状态。
+
 ---
 
-### 🔴 第三阶：背包问题（DP 的重难点）
-> **核心**：限制容量下的收益最大化 / 组合数问题。
+### 🔴 第三阶：背包问题与模型转化（DP 的重难点）
+> **核心**：限制容量下的收益最大化 / 组合数 / 拼装填充。
 
 1. **0-1 背包系列**
    - **LeetCode 416. 分割等和子集 (Partition Equal Subset Sum)**
-   - **核心考点**：判断能否凑出目标和 `sum / 2`，每个元素只能用一次。
+     - **核心考点**：判断能否凑出目标和 `sum / 2`，每个元素只能用一次。
 
 2. **完全背包系列**
-   - **LeetCode 322. 零钱兑换 (Coin Change)**
+   - **LeetCode 322. 零钱兑换 (Coin Change)** `[NeetCode / Blind 75]`
      - **核心考点**：硬币数量无限，求凑成总金额所需的最少硬币数。
+     - **状态转移**：`dp[i] = min(dp[i], dp[i - coin] + 1)`。
    - **LeetCode 518. 零钱兑换 II (Coin Change II)**
      - **核心考点**：求凑成总金额的组合数（注意遍历外层硬币、内层金额的顺序）。
 
+3. **背包变体（拼接问题）**
+   - **LeetCode 139. 单词拆分 (Word Break)** `[NeetCode / Blind 75]`
+     - **核心考点**：字符串拼接转化为完全背包模型。
+     - **解题思路**：将单词库看作物品，字符串看作背包容量，`dp[i]` 表示前 `i` 个字符能否被组合凑出。
+
 ---
 
-### 🟣 第四阶：子序列与字符串问题（高频面霸题）
-> **核心**：双指针/双序列 DP，关注结尾字符匹配。
+### 🟣 第四阶：子序列与字符串/区间 DP（高频面霸题）
+> **核心**：双指针/双序列/区间延伸，关注字符匹配与连续性。
 
-1. **LeetCode 300. 最长递增子序列 (LIS - Longest Increasing Subsequence)**
+1. **LeetCode 300. 最长递增子序列 (LIS - Longest Increasing Subsequence)** `[NeetCode / Blind 75]`
    - **核心考点**：一维状态嵌套循环，时间复杂度 $O(n^2)$（结合二分查找可优至 $O(n \log n)$）。
 
-2. **LeetCode 1143. 最长公共子序列 (LCS - Longest Common Subsequence)**
-   - **核心考点**：二维双字符串匹配，看 `text1[i-1] == text2[j-1]` 是否成立。
-
-3. **LeetCode 53. 最大子数组和 (Maximum Subarray)**
+2. **LeetCode 53. 最大子数组和 (Maximum Subarray)**
    - **核心考点**：连续子数组最大和。
    - **状态转移**：`dp[i] = max(nums[i], dp[i-1] + nums[i])`。
 
-4. **LeetCode 72. 编辑距离 (Edit Distance)**
+3. **LeetCode 1143. 最长公共子序列 (LCS - Longest Common Subsequence)**
+   - **核心考点**：二维双字符串匹配，看 `text1[i-1] == text2[j-1]` 是否成立。
+
+4. **LeetCode 5. 最长回文子串 (Longest Palindromic Substring)** `[NeetCode / Blind 75]`
+   - **核心考点**：区间 DP / 双指针扩展。
+   - **状态转移**：`dp[i][j]` 表示从 `i` 到 `j` 的子串是否回文，当 `s[i] == s[j]` 且 `dp[i+1][j-1]` 为真时成立。
+
+5. **LeetCode 647. 回文子串 (Palindromic Substrings)** `[NeetCode / Blind 75]`
+   - **核心考点**：区间 DP 状态统计。
+   - **解题思路**：基于最长回文子串的状态转移，累计所有 `dp[i][j] == true` 的区间数量。
+
+6. **LeetCode 72. 编辑距离 (Edit Distance)**
    - **核心考点**：字符串 DP 的经典难点，涉及插入、删除、替换三种操作。
