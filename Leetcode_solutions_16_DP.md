@@ -534,3 +534,27 @@ class Solution:
                     
         return dp[m][n]
 ```
+
+### 方法二：滚动数组空间优化（空间复杂度 $O(n)$）
+
+由于更新第 `i` 行时只需要第 `i - 1` 行的信息，可用一维数组滚动维护，注意需额外用变量记录左上角 `dp[i-1][j-1]`：
+
+```python
+class Solution:
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        m, n = len(text1), len(text2)
+        dp = [0] * (n + 1)
+        
+        for i in range(1, m + 1):
+            prev = 0  # 相当于 dp[i-1][j-1] (左上角的值)
+            for j in range(1, n + 1):
+                temp = dp[j]  # 暂存未覆盖前的旧值 (即上一行的 dp[i-1][j])
+                if text1[i - 1] == text2[j - 1]:
+                    dp[j] = prev + 1
+                else:
+                    dp[j] = max(dp[j], dp[j - 1])
+                prev = temp  # 更新左上角给下一个 j 使用
+                
+        return dp[n]
+```
+
