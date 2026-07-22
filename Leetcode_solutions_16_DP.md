@@ -273,54 +273,56 @@ class Solution:
 
 # 🪙 LeetCode 322. 零钱兑换 (Coin Change)
 
-> [cite_start]**题目链接**：[LeetCode 322. 零钱兑换](https://leetcode.cn/problems/coin-change/) `[NeetCode / Blind 75]` [cite: 4, 28]  
-> [cite_start]**难度**：🟡 中等（完全背包模型代表作） 
+> **题目链接**：[LeetCode 322. 零钱兑换](https://leetcode.cn/problems/coin-change/) `[NeetCode / Blind 75]`  
+> **难度**：🟡 中等（完全背包模型代表作）
 
 ---
 
 ## 📌 题目描述
 
-[cite_start]给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额 [cite: 4]。
+给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
 
-[cite_start]计算并返回可以凑成总金额所需的 **最少硬币个数** [cite: 4, 7, 8][cite_start]。如果没有任何一种硬币组合能凑成总金额，返回 `-1` [cite: 4]。
+计算并返回可以凑成总金额所需的 **最少硬币个数**。如果没有任何一种硬币组合能凑成总金额，返回 `-1`。
 
-[cite_start]你可以认为每种硬币的数量是**无限的** [cite: 4]。
+你可以认为每种硬币的数量是**无限的**。
 
 ---
 
 ## 🎒 模型转换：为什么是完全背包？
 
-[cite_start]我们可以把“零钱兑换”直接映射到背包问题 [cite: 4]：
-* [cite_start]**背包容量**：目标金额 `amount` [cite: 4, 28]。
-* [cite_start]**物品**：面额不同的硬币 `coins` [cite: 4]。
-* [cite_start]**物品数量无限**：每种硬币可以重复无限次挑选 $\rightarrow$ **完全背包** [cite: 4, 28]。
-* [cite_start]**求解目标**：填满容量为 `amount` 的背包所需的**最少物品数** [cite: 4, 7, 8]。
+我们可以把“零钱兑换”直接映射到背包问题：
+* **背包容量**：目标金额 `amount`。
+* **物品**：面额不同的硬币 `coins`。
+* **物品数量无限**：每种硬币可以重复无限次挑选 $\rightarrow$ **完全背包**。
+* **求解目标**：填满容量为 `amount` 的背包所需的**最少物品数**。
 
-## [cite_start]💡 状态推导：DP 破局五步法 [cite: 1]
+---
 
-### [cite_start]1. 确定 dp 数组及其下标的含义 [cite: 1]
-* [cite_start]**`dp[i]` 的含义**：凑齐金额 `i` 所需要的最少硬币数量 [cite: 5, 8, 9]。
-* [cite_start]**最终答案**：`dp[amount]` [cite: 4, 28]。
+## 💡 状态推导：DP 破局五步法
 
-### [cite_start]2. 确定递推公式 / 状态转移方程 [cite: 1]
-[cite_start]假设我们当前要凑齐金额 `i`，遍历手里拥有的每一张硬币 `coin` [cite: 5, 9]：
-* [cite_start]如果我们选择了这枚面值为 `coin` 的硬币，问题就转化成了“凑齐金额 `i - coin` 需要的最少硬币数，再加上当前这 1 枚硬币” [cite: 5, 9]。
-* [cite_start]状态转移为：`dp[i - coin] + 1` [cite: 5, 9]。
-* [cite_start]由于我们想找**最少**硬币数，对所有可能的硬币取最小值 [cite: 5, 7, 9]：
+### 1. 确定 dp 数组及其下标的含义
+* **`dp[i]` 的含义**：凑齐金额 `i` 所需要的最少硬币数量。
+* **最终答案**：`dp[amount]`。
+
+### 2. 确定递推公式 / 状态转移方程
+假设我们当前要凑齐金额 `i`，遍历手里拥有的每一张硬币 `coin`：
+* 如果我们选择了这枚面值为 `coin` 的硬币，问题就转化成了“凑齐金额 `i - coin` 需要的最少硬币数，再加上当前这 1 枚硬币”。
+* 状态转移为：`dp[i - coin] + 1`。
+* 由于我们想找**最少**硬币数，对所有可能的硬币取最小值：
   
-  [cite_start]$$\text{dp}[i] = \min(\text{dp}[i], \;\text{dp}[i - \text{coin}] + 1)$$ [cite: 5, 9, 28]
+  $$\text{dp}[i] = \min(\text{dp}[i], \;\text{dp}[i - \text{coin}] + 1)$$
 
-### [cite_start]3. dp 数组如何初始化 (Base Cases) [cite: 1]
+### 3. dp 数组如何初始化 (Base Cases)
 * **`dp[0] = 0`**：凑齐金额 0 需要 0 枚硬币。
 * **其他位置 `dp[i]` 初始化为无穷大（如 `amount + 1` 或 `float('inf')`）**：
-  * [cite_start]因为转移方程求的是 $\min()$，如果初始化为 0，最小值会被覆盖掉 [cite: 7, 9]。
+  * 因为转移方程求的是 $\min()$，如果初始化为 0，最小值会被覆盖掉。
   * 设置为 `amount + 1` 是因为就算全用面额最小的 1 元硬币，最多也只需要 `amount` 枚，所以 `amount + 1` 相当于逻辑上的“正无穷”。
 
-### [cite_start]4. 确定遍历顺序 [cite: 1]
+### 4. 确定遍历顺序
 * **求最值问题**：完全背包的“外层循环遍历金额、内层遍历硬币”或“外层遍历硬币、内层遍历金额”都可以。
-* [cite_start]通常推荐**外层循环遍历金额 `i`（从 1 到 `amount`），内层循环遍历硬币 `coin`**：符合由浅入深的直觉 [cite: 25]。
+* 通常推荐**外层循环遍历金额 `i`（从 1 到 `amount`），内层循环遍历硬币 `coin`**：符合由浅入深的直觉。
 
-### [cite_start]5. 举例推导 dp 数组 (以 `coins = [1, 2, 5], amount = 11` 为例) [cite: 1]
+### 5. 举例推导 dp 数组 (以 `coins = [1, 2, 5], amount = 11` 为例)
 
 初始化：`dp = [0, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf]`
 
@@ -335,9 +337,11 @@ class Solution:
 | ... | ... | ... |
 | **11** | $\min(\text{dp}[10]+1, \text{dp}[9]+1, \text{dp}[6]+1) = \min(3, 3, 2+1)$ | **3** (即 $5 + 5 + 1$) |
 
+---
+
 ## 💻 代码实现
 
-### 标准 DP 实现 (Python)
+### Python 实现
 
 ```python
 class Solution:
