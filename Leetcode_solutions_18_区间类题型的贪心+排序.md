@@ -342,7 +342,6 @@ def merge(intervals: list[list[int]]) -> list[list[int]]:
 
 ## 二、 LeetCode 57. 插入区间 (Insert Interval)
 * **NeetCode 对应**：Insert New Interval
-# LeetCode 57. 插入区间 (Insert Interval) - 原题描述
 
 题目描述
 
