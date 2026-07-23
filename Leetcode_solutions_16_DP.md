@@ -747,3 +747,30 @@ class Solution:
         return max_sum
 ```
 
+### 方法二：空间优化 O(1) / Kadane 算法（推荐 ⭐）
+
+由于 `dp[i]` 只与上一个状态 `dp[i-1]` 有关，可以用一个变量 `cur_sum` 滚动维护：
+
+```python
+class Solution:
+    def maxSubArray(self, nums: list[int]) -> int:
+        cur_sum = nums[0]
+        max_sum = nums[0]
+        
+        for num in nums[1:]:
+            # 如果 cur_sum 是负数，当前 num 加上它只会变小，所以直接丢弃前面的，从 num 开始
+            cur_sum = max(num, cur_sum + num)
+            max_sum = max(max_sum, cur_sum)
+            
+        return max_sum
+```
+
+### ⏱️ 复杂度分析
+
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| :--- | :---: | :---: | :--- |
+| **标准 DP** | $O(n)$ | $O(n)$ | 需要开辟长度为 $n$ 的一维 DP 数组 |
+| **Kadane 算法（空间优化）** | $O(n)$ | $O(1)$ | 仅需 2 个变量（`cur_sum` 与 `max_sum`）滚动更新 |
+
+---
+
