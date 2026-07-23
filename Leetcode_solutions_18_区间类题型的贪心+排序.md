@@ -151,3 +151,145 @@ def merge_intervals(intervals):
 1. **能不能先排序？** 排序后，如果能一眼看出某种明显的先后优先级（如按结束时间、左端点排序），且每一步互不干扰或单向推进 $\rightarrow$ **尝试贪心算法**。
 2. **如果不能排序，或者选了当前最优会导致后面崩溃（需要穷举所有组合的最优状态）** $\rightarrow$ **考虑动态规划**。
 3. **如果需要动态维护过程中的最值（如动态流中的极值查询）** $\rightarrow$ **引入堆（优先队列）**。
+
+---
+
+# 贪心排序与区间类问题：4道经典题目精解与代码答案
+
+本文收录了您提到的 4 道高频区间类题目的详细解析、核心思想以及 Python 代码实现（已整理为 Markdown，可直接用于刷题笔记或 GitHub）。
+
+---
+
+## 一、 LeetCode 56. 合并区间 (Merge Intervals)
+* **NeetCode 对应**：Merge Intervals
+
+### 1. 题目大意
+给出一个区间的集合，请合并所有重叠的区间，并返回一个不重叠的区间数组。
+
+### 2. 核心思路：“推土机”模式（左端点排序）
+* **为什么这样做**：将所有区间按照**左端点升序排序**。排好序后，重叠的区间一定在相邻位置。
+* **具体做法**：维护一个结果列表 `merged`。遍历每个区间，如果 `merged` 为空，或者当前区间的左端点大于 `merged` 中最后一个区间的右端点（说明不重叠），则直接加入；否则，说明发生重叠，更新 `merged` 中最后一个区间的右端点为两者最大值 (`max`)。
+
+### 3. Python 代码答案
+```python
+def merge(intervals: list[list[int]]) -> list[list[int]]:
+    if not intervals:
+        return []
+    
+    # 1. 按照区间左端点升序排序
+    intervals.sort(key=lambda x: x[0])
+    
+    merged = []
+    for interval in intervals:
+        # 如果结果集为空，或者当前区间与前一个区间不重叠
+        if not merged or merged[-1][1] < interval[0]:
+            merged.append(interval)
+        else:
+            # 发生重叠，合并右端点
+            merged[-1][1] = max(merged[-1][1], interval[1])
+            
+    return merged
+```
+
+## 二、 LeetCode 57. 插入区间 (Insert Interval)
+* **NeetCode 对应**：Insert New Interval
+
+### 1. 题目大意
+给出一个无重叠的、按照区间起始端点排序的区间列表，在列表中插入一个新的区间，必要时进行区间合并。
+
+### 2. 核心思路：分三步走策略
+由于原列表已经按左端点排好序，我们可以直接将插入和合并分为三个阶段：
+* **左侧不重叠区间**：把所有结束时间小于新区间开始时间的区间直接加入结果。
+* **中间重叠区间**：把所有与新区间有重叠的区间进行合并（更新新区间的左右边界范围）。
+* **右侧不重叠区间**：把剩余的区间直接加入结果。
+
+### 3. Python 代码答案
+```python
+def insert(intervals: list[list[int]], newInterval: list[int]) -> list[list[int]]:
+    res = []
+    i = 0
+    n = len(intervals)
+    
+    # 1. 添加所有在 newInterval 左侧且不重叠的区间
+    while i < n and intervals[i][1] < newInterval[0]:
+        res.append(intervals[i])
+        i += 1
+        
+    # 2. 合并所有与 newInterval 重叠的区间
+    while i < n and intervals[i][0] <= newInterval[1]:
+        newInterval[0] = min(newInterval[0], intervals[i][0])
+        newInterval[1] = max(newInterval[1], intervals[i][1])
+        i += 1
+    res.append(newInterval)
+    
+    # 3. 添加所有在 newInterval 右侧的剩余区间
+    while i < n:
+        res.append(intervals[i])
+        i += 1
+        
+    return res
+```
+
+## 三、 LeetCode 435. 无重叠区间 (Non-overlapping Intervals)
+* **NeetCode 对应**：Non-overlapping Intervals
+
+### 1. 题目大意
+给定一个区间的集合，找到需要移除区间的最小数量，使剩余区间互不重叠。
+
+### 2. 核心思路：“精明策划”模式（右端点排序）
+* **为什么这样做**：要求移除最少数量，本质上就是要求保留最多数量的不重叠区间。
+* **贪心策略**：将区间按照右端点升序排序。优先保留结束最早的区间，这样能为后面腾出最大的物理空间，容纳更多不重叠的区间。总区间数减去最多能保留的不重叠区间数，就是需要移除的数量。
+
+### 3. Python 代码答案
+```python
+def eraseOverlapIntervals(intervals: list[list[int]]) -> int:
+    if not intervals:
+        return 0
+    
+    # 1. 按照右端点升序排序
+    intervals.sort(key=lambda x: x[1])
+    
+    count = 0  # 记录不重叠的区间个数
+    current_end = float('-inf')
+    
+    for interval in intervals:
+        start, end = interval[0], interval[1]
+        # 如果当前区间的起点 >= 上一个保留区间的终点，说明不冲突
+        if start >= current_end:
+            count += 1
+            current_end = end
+        # 否则发生冲突，当前区间被贪心舍弃（不增加 count）
+        
+    # 需要移除的数量 = 总数 - 最多能保留的不重叠区间数
+    return len(intervals) - count
+```
+
+## 四、 LeetCode 252. 会议室 (Meeting Rooms)
+* **NeetCode 对应**：Meeting Schedule
+
+### 1. 题目大意
+给定一个会议时间安排的数组，每个会议时间包括开始时间和结束时间 `[start_i, end_i]`，请你判断一个人是否能够同时参加所有会议（即判断是否存在时间冲突/重叠）。
+
+### 2. 核心思路：左端点排序 + 相邻查重
+* **贪心策略**：将会议按起始时间升序排序。
+* **判断标准**：排好序后，如果存在时间冲突，那么冲突的会议必然是紧挨着的两个。我们只需要遍历一次，检查任意会议的开始时间是否小于前一个会议的结束时间即可。
+
+### 3. Python 代码答案
+```python
+def canAttendMeetings(intervals: list[list[int]]) -> bool:
+    if not intervals:
+        return True
+    
+    # 1. 按照会议开始时间升序排序
+    intervals.sort(key=lambda x: x[0])
+    
+    # 2. 检查相邻会议是否有冲突
+    for i in range(1, len(intervals)):
+        # 前一个会议的结束时间 > 后一个会议的开始时间，说明冲突
+        if intervals[i - 1][1] > intervals[i][0]:
+            return False
+            
+    return True
+```
+
+---
