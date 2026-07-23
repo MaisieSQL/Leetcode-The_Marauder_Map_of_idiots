@@ -191,7 +191,7 @@ def merge(intervals: list[list[int]]) -> list[list[int]]:
     return merged
 ```
 
-## 56题（合并区间）哪里体现了贪心？
+## Question: 56题（合并区间）哪里体现了贪心？
 
 在 LeetCode 56《合并区间》中，**贪心（Greedy）的思想体现在“每一步都把当前能合并的区间合并到极致，且一旦合并就立刻确定下来、绝不走回头路”**。
 
