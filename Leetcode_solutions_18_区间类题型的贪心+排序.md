@@ -77,3 +77,25 @@ def interval_schedule_by_end(intervals):
 * **适用场景**：合并区间（Merge Intervals）、插入区间（Insert Interval）、会议室（Meeting Schedule）等合并与插入类问题。
 
 * **核心思想**：将区间按左端点从小到大排好序后在数轴上有序展开，通过维护一个当前的合并区间依次向后比对和融合。
+
+```python
+def merge_intervals(intervals):
+    if not intervals:
+        return []
+    
+    # 1. 核心第一步：按照区间左端点（起始时间）升序排序
+    intervals.sort(key=lambda x: x[0])
+    
+    merged = []
+    
+    # 2. 核心第二步：线性扫描并融合
+    for interval in intervals:
+        # 如果结果集为空，或者当前区间与结果集最后一个区间不重叠
+        if not merged or merged[-1][1] < interval[0]:
+            merged.append(interval)
+        else:
+            # 发生重叠，更新当前合并区间的右端点（取最大值）
+            merged[-1][1] = max(merged[-1][1], interval[1])
+            
+    return merged
+```
