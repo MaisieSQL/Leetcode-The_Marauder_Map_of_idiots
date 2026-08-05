@@ -1,0 +1,9 @@
+| LeetCode 题号 | 题目英文原名 | 中文名称 | 所属题型与核心考点 | 难易程度 | LeetCode 传送门链接 |
+| :---: | :--- | :--- | :--- | :---: | :--- |
+| **125** | Valid Palindrome | 验证回文串 | 双指针 (Two Pointers) / 字符串相向夹逼 | 🟢 Easy | [LeetCode 125 传送门](https://leetcode.com/problems/valid-palindrome/) |
+| **739** | Daily Temperatures | 每日温度 | 单调栈 (Monotonic Stack) / 下标寻找下一个更大元素 | 🟡 Medium | [LeetCode 739 传送门](https://leetcode.com/problems/daily-temperatures/) |
+| **901** | Online Stock Span | 股票价格跨度 | 单调栈 (Monotonic Stack) / 动态流累加跨度 | 🟡 Medium | [LeetCode 901 传送门](https://leetcode.com/problems/online-stock-span/) |
+| **84** | Largest Rectangle in Histogram | 柱状图中最大的矩形 | 单调栈 (Monotonic Stack) / 寻找左右两侧第一个更矮元素 | 🔴 Hard | [LeetCode 84 传送门](https://leetcode.com/problems/largest-rectangle-in-histogram/) |
+
+---
+
