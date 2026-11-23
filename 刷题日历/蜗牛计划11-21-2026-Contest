@@ -1,0 +1,9 @@
+| 题序 | 题号 | 题目名称 (Title) | 题目类型 (Category) | 难度 (Difficulty) | LeetCode Link |
+| :---: | :---: | :--- | :--- | :---: | :--- |
+| **Q1** | **4120** | Count Dominant Elements | 数组 / 模拟 / 数学 | 🟢 简单 (Easy) | [LeetCode 4120](https://leetcode.com/problems/count-dominant-elements/) |
+| **Q2** | **4121** | Minimum Cost to Make All Array Elements Equal | 数组 / 贪心 / 分组 | 🟡 中等 (Medium) | [LeetCode 4121](https://leetcode.com/problems/minimum-cost-to-make-all-array-elements-equal/) |
+| **Q3** | **4122** | Earliest Signal Activation Times | 图论 / 最短路 (Dijkstra) / 模拟 | 🟡 中等 (Medium) | [LeetCode 4122](https://leetcode.com/problems/earliest-signal-activation-times/) |
+| **Q4** | **4123** | Minimum Cost to Delete Array | 贪心 / 奇偶性分析 / 数组 | 🔴 困难 (Hard) | [LeetCode 4123](https://leetcode.com/problems/minimum-cost-to-delete-array/) |
+
+---
+
